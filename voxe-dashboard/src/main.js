@@ -485,8 +485,7 @@ let originChart, funnelChart, heroChart;
             document.getElementById('modal-new-lead').classList.remove('hidden');
         }
 
-        function saveLead(e) {
-            e.preventDefault();
+        function saveLead(e) { if(e) e.preventDefault();
             const payload = {
                 id: document.getElementById('input-id').value ? parseInt(document.getElementById('input-id').value) : Date.now(),
                 nome: document.getElementById('input-nome').value,
@@ -682,6 +681,7 @@ if (savedLoginCheck === 'true') {
         if (typeof initApp === 'function') initApp();
     }, 100);
 }
+
 
 
 
