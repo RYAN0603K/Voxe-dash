@@ -210,6 +210,21 @@ let originChart, funnelChart, heroChart;
             renderKanban();
         }
 
+                function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function dragCard(ev, id) {
+            ev.dataTransfer.setData("text", id);
+        }
+
+        function dropCard(ev, colId) {
+            ev.preventDefault();
+            const id = ev.dataTransfer.getData("text");
+            if(id && colId) {
+                updateStatusDirectly(id, colId);
+            }
+        }
         function updateStatusDirectly(id, newStatus) {
             const lead = crmData.find(l => l.id == id);
             if(lead) { lead.status = newStatus; saveData(); refreshAllViews(); }
@@ -249,7 +264,7 @@ let originChart, funnelChart, heroChart;
                 }
 
                 let html = `
-                    <div class="kanban-col bg-slate-200/40 dark:bg-dark-900/40 border border-slate-200/60 dark:border-white/5">
+                    <div ondragover="allowDrop(event)" ondrop="dropCard(event, '${col.id}')" class="kanban-col bg-slate-200/40 dark:bg-dark-900/40 border border-slate-200/60 dark:border-white/5">
                         <div class="flex justify-between items-center mb-4 px-3 py-2.5 rounded-xl ${col.bgHead} border border-white/10 shadow-sm backdrop-blur-md">
                             <h3 class="font-bold text-[13px] tracking-wide flex items-center gap-2"><div class="w-2 h-2 rounded-full ${col.dot}"></div> ${col.label}</h3>
                             <span class="bg-white/60 dark:bg-black/20 text-[10px] font-black px-2 py-0.5 rounded-md">${colLeads.length}</span>
@@ -273,7 +288,7 @@ let originChart, funnelChart, heroChart;
                     }
 
                     html += `
-                        <div class="kanban-card bg-white dark:bg-dark-850 border border-slate-200 dark:border-white/5 cursor-pointer" onclick="editLead(${l.id})">
+                        <div draggable="true" ondragstart="dragCard(event, ${l.id})" class="kanban-card bg-white dark:bg-dark-850 border border-slate-200 dark:border-white/5 cursor-pointer" onclick="editLead(${l.id})">
                             <div class="font-extrabold text-sm mb-1.5 line-clamp-1 text-slate-800 dark:text-slate-100" title="${l.nome}">${l.nome}</div>
                             <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 line-clamp-1">${originIcon} • ${getOrigemLabel(l.origem)}</div>
                             <div class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">${formatBRL(l.mensal)}</div>
@@ -583,6 +598,9 @@ window.saveLead = saveLead;
 window.editLead = editLead;
 window.deleteFromModal = deleteFromModal;
 window.updateStatusDirectly = updateStatusDirectly;
+  window.allowDrop = allowDrop;
+  window.dragCard = dragCard;
+  window.dropCard = dropCard;
 
 
 
@@ -663,6 +681,7 @@ if (savedLoginCheck === 'true') {
         if (typeof initApp === 'function') initApp();
     }, 100);
 }
+
 
 
 
