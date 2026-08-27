@@ -593,6 +593,8 @@ let originChart, funnelChart, heroChart;
 // Expose functions to window for inline HTML event handlers
 window.changePage = changePage;
   window.updateOrigemOptions = updateOrigemOptions;
+  window.exportBackup = exportBackup;
+  window.importBackup = importBackup;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.saveLead = saveLead;
@@ -682,6 +684,7 @@ if (savedLoginCheck === 'true') {
         if (typeof initApp === 'function') initApp();
     }, 100);
 }
+
 
 
 
