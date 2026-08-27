@@ -593,6 +593,34 @@ let originChart, funnelChart, heroChart;
 // Expose functions to window for inline HTML event handlers
 window.changePage = changePage;
   window.updateOrigemOptions = updateOrigemOptions;
+  function exportBackup() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(crmData));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "voxe_crm_backup.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+function importBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (Array.isArray(data)) {
+                crmData = data;
+                saveData();
+                refreshAllViews();
+                alert('Backup importado com sucesso!');
+            }
+        } catch (err) {
+            alert('Erro ao ler arquivo de backup.');
+        }
+    };
+    reader.readAsText(file);
+}
   window.exportBackup = exportBackup;
   window.importBackup = importBackup;
 window.openModal = openModal;
@@ -684,6 +712,7 @@ if (savedLoginCheck === 'true') {
         if (typeof initApp === 'function') initApp();
     }, 100);
 }
+
 
 
 
