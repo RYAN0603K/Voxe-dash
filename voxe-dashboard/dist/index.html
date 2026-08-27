@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxe Assessoria - CRM</title>
+    
+    <!-- Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { 
+                        voxe: { 50: '#f0fdfa', 100: '#ccfbf1', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a' },
+                        dark: { 800: '#1e293b', 850: '#151e2e', 900: '#0f172a', 950: '#020617' }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(45, 212, 191, 0.15)',
+                        'glow-hover': '0 0 30px rgba(45, 212, 191, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Highcharts for true 3D Funnel -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/modules/cylinder.js"></script>
+    <script src="https://code.highcharts.com/modules/funnel3d.js"></script>
+
+  <script type="module" crossorigin>(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const n of document.querySelectorAll('link[rel="modulepreload"]'))o(n);new MutationObserver(n=>{for(const d of n)if(d.type==="childList")for(const c of d.addedNodes)c.tagName==="LINK"&&c.rel==="modulepreload"&&o(c)}).observe(document,{childList:!0,subtree:!0});function a(n){const d={};return n.integrity&&(d.integrity=n.integrity),n.referrerPolicy&&(d.referrerPolicy=n.referrerPolicy),n.crossOrigin==="use-credentials"?d.credentials="include":n.crossOrigin==="anonymous"?d.credentials="omit":d.credentials="same-origin",d}function o(n){if(n.ep)return;n.ep=!0;const d=a(n);fetch(n.href,d)}})();let v,b,i=[],x=!1,I=0,E=0,u=65,p=-25;const D=()=>{x=!1;const t=document.getElementById("holo-scene");t&&(t.style.cursor="grab")};window.addEventListener("mouseup",D);window.addEventListener("touchend",D);const H=t=>{if(!x)return;t.preventDefault&&t.preventDefault();const e=document.getElementById("holo-drag-wrapper");if(!e)return;const a=t.touches?t.touches[0].clientX:t.clientX,o=t.touches?t.touches[0].clientY:t.clientY,n=a-I,d=o-E;p+=n*.5,u-=d*.5,u<0&&(u=0),u>90&&(u=90),e.style.transform=`rotateX(${u}deg) rotateZ(${p}deg)`,document.querySelectorAll(".holo-label").forEach(c=>{c.style.transform=`rotateZ(${-p}deg) rotateX(${-u}deg)`}),I=a,E=o};window.addEventListener("mousemove",H);window.addEventListener("touchmove",H,{passive:!1});let $;const j=()=>{$&&clearInterval($),$=setInterval(()=>{if(!x){const t=document.getElementById("holo-drag-wrapper");t&&(p+=.3,t.style.transform=`rotateX(${u}deg) rotateZ(${p}deg)`,document.querySelectorAll(".holo-label").forEach(e=>{e.style.transform=`rotateZ(${-p}deg) rotateX(${-u}deg)`}))}},30)};j();const f=t=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(t||0),q=t=>{if(!t)return"";const e=t.split("-");return`${e[2]}/${e[1]}/${e[0]}`};function T(t){if(!t)return"";const e=(""+t).replace(/\D/g,"");return e.length===11?`(${e.substring(0,2)}) ${e.substring(2,7)}-${e.substring(7)}`:e.length===10?`(${e.substring(0,2)}) ${e.substring(2,6)}-${e.substring(6)}`:t}const X=[{v:"instagram",l:"Instagram Ads"},{v:"google",l:"Google Ads"},{v:"indicacao",l:"Indicação"},{v:"organico",l:"SEO / Orgânico"}],P=[{v:"cold_call",l:"Cold Call"},{v:"linkedin",l:"LinkedIn Sales"},{v:"email",l:"Cold Email"},{v:"networking",l:"Networking Evento"}];function S(t){const e=[...X,...P].find(a=>a.v===t);return e?e.l:t}function C(){const t=document.getElementById("input-tipo").value,e=document.getElementById("input-origem");e.innerHTML="",(t==="inbound"?X:P).forEach(a=>{e.innerHTML+=`<option value="${a.v}">${a.l}</option>`})}function J(){const t=document.documentElement;t.classList.contains("dark")?(t.classList.remove("dark"),localStorage.setItem("voxe_theme_v2","light"),document.getElementById("theme-icon").setAttribute("data-lucide","moon")):(t.classList.add("dark"),localStorage.setItem("voxe_theme_v2","dark"),document.getElementById("theme-icon").setAttribute("data-lucide","sun")),lucide.createIcons(),F()}function W(){localStorage.getItem("voxe_theme_v2")==="light"&&(document.documentElement.classList.remove("dark"),document.getElementById("theme-icon").setAttribute("data-lucide","moon"))}let y=null;function z(){y=supabase.createClient("https://feqxzustzkzrpkgqyptz.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcXh6dXN0emt6cnBrZ3F5cHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODgzMTIsImV4cCI6MjEwMzM2NDMxMn0.Y9scaSab-52Y13QfQhGUw4JEa9tYvlbtMxoA9wq8pQE");const a=document.getElementById("supabase-modal");a&&a.classList.add("hidden"),Z()}function Q(){const t=document.getElementById("supa-url").value.trim(),e=document.getElementById("supa-key").value.trim();if(!t||!e)return alert("Preencha os dois campos!");localStorage.setItem("voxe_supa_url",t),localStorage.setItem("voxe_supa_key",e),z()}async function Z(){if(y)try{const{data:e,error:a}=await y.from("leads").select("*");if(a)throw a;if(e&&e.length>0){i=e,k();return}}catch(e){console.error("Supabase Error:",e),alert("Erro ao ler do Supabase. Verifique se a tabela 'leads' existe e é pública.")}const t=localStorage.getItem("voxe_crm_data_v4");t?i=JSON.parse(t):(i=[{id:1,nome:"Dr. Roberto (Clínica Odonto)",tipo:"inbound",origem:"instagram",status:"1_reuniao",dataReuniao:"2026-08-30",horaReuniao:"14:30",mensal:1500,total:9e3,telefone:"11987654321",anotacoes:"Quer focar em implantes."},{id:2,nome:"E-commerce Moda Fitness",tipo:"outbound",origem:"linkedin",status:"2_reuniao",dataReuniao:"2026-08-28",horaReuniao:"10:00",mensal:2500,total:15e3,telefone:"21999998888",anotacoes:"Proposta enviada."}],M()),k()}async function M(){if(localStorage.setItem("voxe_crm_data_v4",JSON.stringify(i)),y)try{const{error:t}=await y.from("leads").upsert(i);t&&console.error("Erro ao salvar no Supabase:",t)}catch{}}function k(){F(),V(),A()}function G(t){confirm("Tem certeza que deseja apagar este lead da sua carteira?")&&(i=i.filter(e=>e.id!=t),M(),k(),_())}const R=[{id:"novo",label:"Leads",bgHead:"bg-slate-200/50 dark:bg-slate-800 text-slate-700 dark:text-slate-300",dot:"bg-slate-400"},{id:"1_reuniao",label:"1ª Reunião",bgHead:"bg-amber-100/50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",dot:"bg-amber-400"},{id:"2_reuniao",label:"2ª Reunião",bgHead:"bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",dot:"bg-purple-400"},{id:"cliente",label:"Clientes Ativos",bgHead:"bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",dot:"bg-emerald-400"},{id:"perdido",label:"Antigos Clientes",bgHead:"bg-red-100/50 dark:bg-red-900/30 text-red-700 dark:text-red-400",dot:"bg-red-400"}];function A(){const t=document.getElementById("board-funil");t.innerHTML="";const e=[];R.forEach(l=>{const s=i.filter(r=>r.status===l.id);let B=s.reduce((r,g)=>r+(g.mensal||0),0);l.id!=="perdido"&&e.push([l.label,s.length]);let h=`
+                    <div class="kanban-col bg-slate-200/40 dark:bg-dark-900/40 border border-slate-200/60 dark:border-white/5">
+                        <div class="flex justify-between items-center mb-4 px-3 py-2.5 rounded-xl ${l.bgHead} border border-white/10 shadow-sm backdrop-blur-md">
+                            <h3 class="font-bold text-[13px] tracking-wide flex items-center gap-2"><div class="w-2 h-2 rounded-full ${l.dot}"></div> ${l.label}</h3>
+                            <span class="bg-white/60 dark:bg-black/20 text-[10px] font-black px-2 py-0.5 rounded-md">${s.length}</span>
+                        </div>
+                        <div class="text-right px-2 mb-2 text-xs font-bold text-slate-400">Total: ${f(B)}</div>
+                        <div class="flex flex-col gap-3">
+                `;s.forEach(r=>{let g=`<select onchange="updateStatusDirectly(${r.id}, this.value)" onclick="event.stopPropagation()" class="select-status text-xs w-full mt-4 border-t border-slate-100 dark:border-white/5 pt-3 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">`;R.forEach(w=>{g+=`<option class="bg-slate-50 dark:bg-dark-900 text-slate-800 dark:text-slate-200" value="${w.id}" ${r.status===w.id?"selected":""}>Mover p/ ${w.label}</option>`}),g+="</select>";let L=r.dataReuniao?`<div class="text-[11px] bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-lg mt-3 font-semibold inline-flex items-center gap-1.5 border border-slate-200 dark:border-white/5"><i data-lucide="calendar" class="w-3 h-3 text-voxe-500"></i> ${q(r.dataReuniao)} às ${r.horaReuniao||"--:--"}</div>`:"",Y=r.tipo==="inbound"?"🎯 Inbound":"🏹 Outbound",O="";r.telefone&&(O=`<a href="https://wa.me/55${r.telefone.replace(/\D/g,"")}" target="_blank" onclick="event.stopPropagation()" class="mt-3 text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 text-xs font-bold transition-colors w-fit"><i data-lucide="message-circle" class="w-3.5 h-3.5"></i> ${T(r.telefone)}</a>`),h+=`
+                        <div class="kanban-card bg-white dark:bg-dark-850 border border-slate-200 dark:border-white/5 cursor-pointer" onclick="editLead(${r.id})">
+                            <div class="font-extrabold text-sm mb-1.5 line-clamp-1 text-slate-800 dark:text-slate-100" title="${r.nome}">${r.nome}</div>
+                            <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 line-clamp-1">${Y} • ${S(r.origem)}</div>
+                            <div class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">${f(r.mensal)}</div>
+                            ${O}
+                            ${L}
+                            ${g}
+                        </div>
+                    `}),h+="</div></div>",t.innerHTML+=h});const a=[{main:"#38bdf8",bg:"rgba(56, 189, 248, 0.1)",bgHover:"rgba(56, 189, 248, 0.3)",glow:"rgba(56, 189, 248, 0.5)"},{main:"#fbbf24",bg:"rgba(251, 191, 36, 0.1)",bgHover:"rgba(251, 191, 36, 0.3)",glow:"rgba(251, 191, 36, 0.5)"},{main:"#c084fc",bg:"rgba(192, 132, 252, 0.1)",bgHover:"rgba(192, 132, 252, 0.3)",glow:"rgba(192, 132, 252, 0.5)"},{main:"#34d399",bg:"rgba(52, 211, 153, 0.1)",bgHover:"rgba(52, 211, 153, 0.3)",glow:"rgba(52, 211, 153, 0.5)"}];let o=`<div class="holo-scene" id="holo-scene" style="cursor: grab;">
+                <div class="holo-drag-wrapper" id="holo-drag-wrapper" style="transform-style: preserve-3d; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transform: rotateX(${u}deg) rotateZ(${p}deg);">
+                    <div class="holo-container">`;o+='<div class="holo-core"></div>';let n=320,d=120,c=0;R.forEach(l=>{if(l.id==="perdido")return;const s=i.filter(g=>g.status===l.id);let B=s.reduce((g,L)=>g+(L.mensal||0),0);const h=s.length,r=a[c];o+=`
+                <div class="holo-tier" style="width: ${n}px; height: ${n}px; --tz: ${d}px; --clr: ${r.main}; --bg: ${r.bg}; --bg-hover: ${r.bgHover}; --delay: ${c*.5}s;">
+                    <div class="holo-label" style="--clr: ${r.main}; --clr-glow: ${r.glow}; transform: rotateZ(${-p}deg) rotateX(${-u}deg);">
+                        <div class="holo-label-title">${l.label}</div>
+                        <div class="holo-label-stats">${h} leads ativos</div>
+                        <div class="holo-label-money">${f(B)}</div>
+                    </div>
+                </div>`,n-=60,d-=80,c++}),o+="</div></div></div>",document.getElementById("funnel3d-container").innerHTML=o;const m=document.getElementById("holo-scene");m.addEventListener("mousedown",l=>{l.preventDefault(),x=!0,I=l.clientX,E=l.clientY,m.style.cursor="grabbing"}),m.addEventListener("touchstart",l=>{x=!0,I=l.touches[0].clientX,E=l.touches[0].clientY}),lucide.createIcons()}function V(){const t=document.getElementById("agenda-list"),e=document.getElementById("no-agenda");t.innerHTML="";const a=i.filter(o=>o.dataReuniao&&o.status!=="cliente"&&o.status!=="perdido").sort((o,n)=>new Date(o.dataReuniao+"T"+(o.horaReuniao||"00:00"))-new Date(n.dataReuniao+"T"+(n.horaReuniao||"00:00")));a.length===0?e.classList.remove("hidden"):(e.classList.add("hidden"),a.forEach(o=>{const n=o.status==="1_reuniao",[d,c,m]=o.dataReuniao.split("-"),l=document.createElement("div");l.className="bg-white dark:bg-dark-850 border border-slate-200 dark:border-white/5 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between h-full",l.onclick=()=>N(o.id),l.innerHTML=`
+                        <div>
+                            <div class="flex justify-between items-start mb-5">
+                                <div class="bg-gradient-to-b from-slate-800 to-slate-900 text-white rounded-xl p-2.5 text-center min-w-[4rem] shadow-md border border-slate-700">
+                                    <div class="text-2xl font-black leading-none">${m}</div>
+                                    <div class="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-80">${c}/${d.substring(2)}</div>
+                                </div>
+                                <div class="bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-white/5">
+                                    <i data-lucide="clock" class="w-3.5 h-3.5 text-voxe-500"></i> ${o.horaReuniao||"--:--"}
+                                </div>
+                            </div>
+                            <h3 class="font-extrabold text-lg leading-tight mb-2 line-clamp-1 text-slate-800 dark:text-slate-100">${o.nome}</h3>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-3">${o.tipo==="inbound"?"🎯 Inbound":"🏹 Outbound"} - ${S(o.origem)}</p>
+                            ${o.telefone?`<div class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium"><i data-lucide="phone" class="w-3.5 h-3.5"></i> ${T(o.telefone)}</div>`:""}
+                        </div>
+                        <div class="mt-5 pt-5 border-t border-slate-100 dark:border-white/5 flex justify-between items-center">
+                            <span class="px-3 py-1.5 rounded-lg text-xs font-bold ${n?"bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400":"bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"}">${n?"1ª Reunião":"2ª Reunião"}</span>
+                            <span class="font-black text-emerald-600 dark:text-emerald-400 text-lg">${f(o.mensal)}</span>
+                        </div>
+                    `,t.appendChild(l)}),lucide.createIcons())}function F(){let t=0,e=0,a=0,o=0;const n={},d={novo:0,"1_reuniao":0,"2_reuniao":0,cliente:0,perdido:0};i.forEach(s=>{e+=s.total,s.status==="cliente"?t+=s.mensal:s.status!=="perdido"&&(s.tipo==="inbound"?a++:o++),n[s.origem]=(n[s.origem]||0)+1,d[s.status]!==void 0&&d[s.status]++}),document.getElementById("kpi-leads").innerText=a+o,document.getElementById("kpi-ativos").innerText=d.cliente,document.getElementById("kpi-mensal").innerText=f(t),document.getElementById("kpi-total").innerText=f(e);const c=document.documentElement.classList.contains("dark"),m=c?"#94a3b8":"#64748b",l=c?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.05)";v&&(v.data.labels=Object.keys(n).map(s=>S(s)),v.data.datasets[0].data=Object.values(n),v.options.plugins.legend.labels.color=m,v.update()),b&&(b.data.datasets[0].data=[d.novo,d["1_reuniao"],d["2_reuniao"],d.cliente,d.perdido],b.options.scales.x.ticks.color=m,b.options.scales.y.ticks.color=m,b.options.scales.y.grid.color=l,b.update())}function K(){document.getElementById("modal-title").innerText="Novo Prospecto",document.getElementById("form-new-lead").reset(),document.getElementById("input-id").value="",document.getElementById("btn-delete").classList.add("hidden"),document.getElementById("input-tipo").value="inbound",C(),document.getElementById("modal-new-lead").classList.remove("hidden")}function _(){document.getElementById("modal-new-lead").classList.add("hidden")}function N(t){const e=i.find(a=>a.id===t);e&&(document.getElementById("modal-title").innerText="Editar Prospecto",document.getElementById("input-id").value=e.id,document.getElementById("input-nome").value=e.nome,document.getElementById("input-telefone").value=e.telefone||"",document.getElementById("input-tipo").value=e.tipo,C(),document.getElementById("input-origem").value=e.origem,document.getElementById("input-status").value=e.status,document.getElementById("input-data").value=e.dataReuniao||"",document.getElementById("input-hora").value=e.horaReuniao||"",document.getElementById("input-mensal").value=e.mensal||"",document.getElementById("input-total").value=e.total||"",document.getElementById("input-anotacoes").value=e.anotacoes||"",document.getElementById("btn-delete").classList.remove("hidden"),document.getElementById("modal-new-lead").classList.remove("hidden"))}function U(t){t.preventDefault();const e={id:document.getElementById("input-id").value?parseInt(document.getElementById("input-id").value):Date.now(),nome:document.getElementById("input-nome").value,telefone:document.getElementById("input-telefone").value,tipo:document.getElementById("input-tipo").value,origem:document.getElementById("input-origem").value,status:document.getElementById("input-status").value,dataReuniao:document.getElementById("input-data").value,horaReuniao:document.getElementById("input-hora").value,mensal:parseFloat(document.getElementById("input-mensal").value)||0,total:parseFloat(document.getElementById("input-total").value)||0,anotacoes:document.getElementById("input-anotacoes").value},a=i.findIndex(o=>o.id===e.id);a>=0?i[a]=e:i.push(e),M(),k(),_()}function ee(){const t=document.getElementById("input-id").value;t&&G(parseInt(t))}function te(t){document.querySelectorAll(".page-content").forEach(a=>a.classList.remove("active")),document.querySelectorAll("aside nav button").forEach(a=>{a.classList.remove("bg-gradient-to-r","from-voxe-500","to-blue-600","text-white","shadow-lg","shadow-voxe-500/20"),a.classList.add("text-slate-600","dark:text-slate-400")}),document.getElementById("page-"+t).classList.add("active");const e=document.getElementById("nav-"+t);e.classList.remove("text-slate-600","dark:text-slate-400"),e.classList.add("bg-gradient-to-r","from-voxe-500","to-blue-600","text-white","shadow-lg","shadow-voxe-500/20"),t==="funil"&&setTimeout(A,50)}document.addEventListener("DOMContentLoaded",()=>{W(),C(),lucide.createIcons(),z(),Chart.defaults.font.family="'Inter', sans-serif";const t=document.getElementById("heroProgressChart").getContext("2d");let e=t.createLinearGradient(0,0,0,300);e.addColorStop(0,"rgba(16, 185, 129, 0.4)"),e.addColorStop(1,"rgba(16, 185, 129, 0)"),new Chart(t,{type:"line",data:{labels:["18 Mar","21 Mar","24 Mar","27 Mar","30 Mar","02 Apr","05 Apr","08 Apr","11 Apr","14 Apr","17 Apr","20 Apr","23 Apr","26 Apr","29 Apr","02 May","05 May","08 May","11 May"],datasets:[{data:[2e4,23e3,24e3,22e3,35600,36e3,41e3,37e3,36e3,36600,37e3,37e3,33200,36200,33600,39e3,37600,32400,33200],borderColor:"#10b981",borderWidth:3,backgroundColor:e,fill:!0,tension:.4,pointRadius:0,pointHoverRadius:6,pointBackgroundColor:"#10b981"}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1},tooltip:{mode:"index",intersect:!1,callbacks:{label:n=>f(n.raw)}}},scales:{x:{display:!1},y:{display:!1,min:15e3}},interaction:{mode:"nearest",axis:"x",intersect:!1}}});const a=document.getElementById("leadsOriginChart").getContext("2d");v=new Chart(a,{type:"pie",data:{labels:[],datasets:[{data:[],backgroundColor:["#0d9488","#0ea5e9","#8b5cf6","#f59e0b","#ec4899"],borderWidth:0,hoverOffset:4}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{position:"right",labels:{font:{weight:"600"}}}}}});const o=document.getElementById("leadsFunnelChart").getContext("2d");b=new Chart(o,{type:"bar",data:{labels:["Leads","1ª Reunião","2ª Reunião","Ativos","Antigos"],datasets:[{label:"Leads",data:[0,0,0,0,0],backgroundColor:["#94a3b8","#fbbf24","#a78bfa","#34d399","#f87171"],borderRadius:8,barThickness:40}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1}},scales:{y:{beginAtZero:!0,ticks:{stepSize:1,font:{weight:"600"}}},x:{grid:{display:!1},ticks:{font:{weight:"600"}}}}}}),Z()});window.changePage=te;window.openModal=K;window.closeModal=_;window.saveLead=U;window.editLead=N;window.deleteFromModal=ee;window.drag=drag;window.allowDrop=allowDrop;window.drop=drop;window.renderKanban=A;window.toggleTheme=J;window.connectSupabase=Q;window.toggleSidebar=function(){const t=document.getElementById("sidebar"),e=document.getElementById("mobile-overlay");t.classList.contains("-translate-x-full")?(t.classList.remove("-translate-x-full"),e.classList.remove("hidden")):(t.classList.add("-translate-x-full"),e.classList.add("hidden"))};const ae="voxe";function oe(){localStorage.getItem("voxe_logged_in")==="true"&&(document.getElementById("login-screen").classList.add("hidden"),document.getElementById("app-container").classList.remove("hidden"));const e=document.getElementById("login-form");e&&e.addEventListener("submit",a=>{a.preventDefault(),document.getElementById("login-password").value.toLowerCase().trim()===ae?(localStorage.setItem("voxe_logged_in","true"),document.getElementById("login-screen").classList.add("opacity-0"),setTimeout(()=>{document.getElementById("login-screen").classList.add("hidden"),document.getElementById("app-container").classList.remove("hidden"),window.dispatchEvent(new Event("resize"))},300)):(document.getElementById("login-error").classList.remove("hidden"),document.getElementById("login-password").value="")})}oe();</script>
+  <style rel="stylesheet" crossorigin>body{margin:0;padding:0;transition:background-color .4s ease,color .4s ease}.page-content{display:none;opacity:0;transition:opacity .3s ease}.page-content.active{display:block;opacity:1}.kanban-board{display:flex;gap:1.5rem;overflow-x:auto;padding-bottom:2rem;min-height:65vh;scroll-behavior:smooth}.kanban-col{flex:1;min-width:320px;border-radius:1rem;padding:.75rem;display:flex;flex-direction:column;gap:1rem}.kanban-card{border-radius:.75rem;padding:1.5rem;transition:all .3s cubic-bezier(.4,0,.2,1);position:relative;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}.kanban-card:hover{transform:translateY(-4px);box-shadow:0 10px 25px -5px #0000001a,0 8px 10px -6px #0000001a}.dark .kanban-card:hover{box-shadow:0 10px 25px -5px #00000080,0 0 15px #0d948833;border-color:#334155}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px;border:2px solid transparent;background-clip:padding-box}.dark ::-webkit-scrollbar-thumb{background:#334155;border:2px solid transparent;background-clip:padding-box}::-webkit-scrollbar-thumb:hover{background:#94a3b8}.dark ::-webkit-scrollbar-thumb:hover{background:#475569}.select-status{-webkit-appearance:none;-moz-appearance:none;appearance:none;background:transparent;font-weight:600;cursor:pointer;outline:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right center;background-size:1em;padding-right:1.2rem;transition:color .2s}.select-status:hover{color:#0d9488}.glass-panel{background:#ffffffb3;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}.dark .glass-panel{background:#0f172a99;border:1px solid rgba(255,255,255,.05)}.text-gradient{background:linear-gradient(135deg,#2dd4bf,#0284c7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}html.dark{color-scheme:dark}.holo-scene{position:relative;width:100%;height:480px;perspective:1200px;display:flex;align-items:center;justify-content:center;overflow:hidden}.holo-container{position:relative;transform-style:preserve-3d;width:400px;height:400px;animation:holoFloat 6s ease-in-out infinite alternate}@keyframes holoFloat{0%{transform:translateY(0)}to{transform:translateY(-20px)}}.holo-tier{position:absolute;top:50%;left:50%;transform-style:preserve-3d;border-radius:50%;border:3px solid var(--clr);background:var(--bg);box-shadow:0 0 25px var(--clr),inset 0 0 30px var(--clr);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;transition:all .4s cubic-bezier(.175,.885,.32,1.275);animation:tierPulse 3s ease-in-out infinite alternate;animation-delay:var(--delay);cursor:pointer}.holo-tier:hover{box-shadow:0 0 60px var(--clr),inset 0 0 60px var(--clr);border-width:5px;background:var(--bg-hover)}@keyframes tierPulse{0%{transform:translate(-50%,-50%) translateZ(calc(var(--tz) - 5px))}to{transform:translate(-50%,-50%) translateZ(calc(var(--tz) + 5px))}}.holo-tier:before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;border-radius:50%;border:2px solid var(--clr);transform:translateZ(-25px);opacity:.4;box-shadow:0 0 15px var(--clr)}.holo-core{position:absolute;top:50%;left:50%;width:4px;height:400px;background:linear-gradient(to bottom,transparent,#2dd4bf,transparent);transform:translate(-50%,-50%) rotateX(90deg);box-shadow:0 0 20px #2dd4bf;animation:coreBeam 2s linear infinite}@keyframes coreBeam{0%{opacity:.3;height:350px}50%{opacity:1;height:450px}to{opacity:.3;height:350px}}.holo-label{position:absolute;left:calc(100% + 40px);transform:rotate(25deg) rotateX(-65deg);background:#0f172ad9;border:1px solid var(--clr);border-left:4px solid var(--clr);color:#fff;padding:12px 20px;border-radius:12px;white-space:nowrap;box-shadow:0 10px 25px #00000080,0 0 15px var(--clr-glow);pointer-events:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}.holo-label-title{font-size:16px;font-weight:900;margin-bottom:2px;text-transform:uppercase;letter-spacing:1px}.holo-label-stats{font-size:13px;color:#cbd5e1;font-weight:600}.holo-label-money{font-size:18px;color:var(--clr);font-weight:900;margin-top:4px}</style>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 dark:bg-dark-950 dark:text-slate-200">
+    <!-- LOGIN BARRIER -->
+    <div id="login-screen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-100 dark:bg-dark-950 transition-opacity duration-500">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-voxe-500/20 blur-[120px] rounded-full"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 blur-[120px] rounded-full"></div>
+        </div>
+        <div class="bg-white/80 dark:bg-dark-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20 dark:border-white/10 w-full max-w-md relative z-10 transform transition-all mx-4">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center gap-2 mb-6"><div class="w-12 h-12 bg-gradient-to-br from-voxe-400 to-voxe-600 rounded-xl flex items-center justify-center shadow-lg"><span class="text-white font-extrabold text-2xl">V</span></div><h1 class="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">Voxe</h1></div>
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Acesso Restrito</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">Digite a senha para acessar o CRM</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <input type="password" id="login-password" placeholder="Senha de Acesso" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 font-medium text-slate-800 dark:text-slate-100 text-center text-lg" autofocus>
+                    <p id="login-error" class="text-red-500 text-sm text-center mt-2 hidden font-medium">Senha incorreta.</p>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-voxe-500 to-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:opacity-90">Acessar Painel</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="app-container" class="flex h-screen w-full overflow-hidden hidden">
+
+    <!-- Supabase Setup Modal -->
+    <div id="supabase-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-dark-900 w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-white/5 mx-4">
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Conectar Supabase (Nuvem)</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Cole as credenciais do seu projeto Supabase abaixo para sincronizar seus Leads na nuvem. Crie uma tabela chamada <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-voxe-500">leads</code>.</p>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Project URL</label>
+                    <input type="text" id="supa-url" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 outline-none text-slate-800 dark:text-slate-200" placeholder="https://xyz.supabase.co">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Anon / Public Key</label>
+                    <input type="password" id="supa-key" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 outline-none text-slate-800 dark:text-slate-200" placeholder="eyJhbGciOiJIUzI1NiIsInR5c...">
+                </div>
+            </div>
+            
+            <button onclick="connectSupabase()" class="w-full bg-gradient-to-r from-voxe-500 to-blue-600 hover:from-voxe-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-transform transform active:scale-95 flex items-center justify-center gap-2">
+                <i data-lucide="database"></i> Conectar Banco de Dados
+            </button>
+            <button onclick="document.getElementById('supabase-modal').classList.add('hidden')" class="w-full mt-3 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-semibold py-2">
+                Usar Offline (Local)
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar Premium -->
+    <aside id="sidebar" class="w-64 bg-white dark:bg-dark-900 border-r flex-shrink-0 absolute md:relative z-40 h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300 border-slate-200 dark:border-white/5 hidden md:flex flex-col z-20 shadow-xl transition-colors">
+        <div class="h-28 flex items-center justify-center p-6 bg-gradient-to-b from-slate-50 to-white dark:from-dark-950 dark:to-dark-900 border-b border-slate-100 dark:border-white/5">
+            <!-- Sleek CSS Logo for Voxe Assessoria -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-voxe-500 to-blue-600 flex items-center justify-center shadow-lg shadow-voxe-500/30 text-white font-black text-xl tracking-tighter">
+                    V
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-black tracking-tight text-xl text-slate-800 dark:text-white leading-none">VOXE</span>
+                    <span class="font-semibold text-[10px] tracking-widest text-voxe-500 uppercase leading-none mt-1">Assessoria</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="px-6 pt-8 pb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Módulos</div>
+        <nav class="px-4 space-y-1.5 flex-1">
+            <button onclick="changePage('painel')" id="nav-painel" class="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-voxe-500 to-blue-600 text-white rounded-xl transition-all shadow-lg shadow-voxe-500/20 group">
+                <i data-lucide="layout-grid" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Visão Geral</span>
+            </button>
+            <button onclick="changePage('funil')" id="nav-funil" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all group">
+                <i data-lucide="layers" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Funil de Vendas</span>
+            </button>
+            <button onclick="changePage('agenda')" id="nav-agenda" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all group">
+                <i data-lucide="calendar-clock" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Agenda Ativa</span>
+            </button>
+        </nav>
+
+        <div class="px-6 pt-4 pb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Avançado</div>
+        <nav class="px-4 space-y-1.5 pb-6">
+            <button onclick="changePage('configuracoes')" id="nav-configuracoes" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all group">
+                <i data-lucide="database" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Cofre de Dados</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+        <!-- Decorative Background Glows -->
+        <div class="absolute top-0 left-0 w-full h-96 bg-voxe-500/5 blur-[120px] pointer-events-none rounded-full transform -translate-y-1/2"></div>
+        
+        <!-- Header -->
+        <header class="h-20 glass-panel border-b border-slate-200 dark:border-white/5 flex items-center justify-between px-10 shrink-0 z-10 transition-colors">
+            <div class="flex items-center bg-slate-100/80 dark:bg-dark-900/80 rounded-2xl px-5 py-2.5 w-96 border border-transparent focus-within:border-voxe-500 focus-within:bg-white dark:focus-within:bg-dark-950 transition-all shadow-inner">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                <input type="text" placeholder="Localizar contrato ou lead..." class="bg-transparent border-none outline-none ml-3 text-sm w-full text-slate-700 dark:text-slate-200 font-medium placeholder-slate-400" />
+            </div>
+            <div class="flex items-center gap-5">
+                <button onclick="toggleTheme()" class="p-3 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 transition-colors">
+                    <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                </button>
+                <div class="h-8 w-px bg-slate-200 dark:bg-white/10"></div>
+                <button onclick="openModal()" class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition-transform flex items-center gap-2 shadow-lg">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Novo Prospecto
+                </button>
+            </div>
+        </header>
+
+        <!-- Pages Container -->
+        <main class="flex-1 overflow-y-auto p-10 relative z-0">
+            
+            <!-- PAGE: PAINEL -->
+            <div id="page-painel" class="page-content active">
+                <div class="mb-8">
+                    <h1 class="text-4xl font-extrabold tracking-tight mb-2">Workspace <span class="text-gradient">Voxe</span></h1>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">Controle de caixa, pipeline e projeção de faturamento.</p>
+                </div>
+
+                <!-- Progress Metric Hero Card (Recreation of Shadcn component) -->
+                <div class="relative w-full min-h-[380px] rounded-[28px] border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0b1221] shadow-[0_2px_10px_rgba(0,0,0,0.04)] overflow-hidden mb-8 flex flex-col">
+                    <!-- Right side background chart & grid -->
+                    <div class="absolute inset-y-0 right-0 z-0" style="width: 62%;">
+                        <div class="absolute inset-0" style="background: linear-gradient(to left, rgba(16, 185, 129, 0.05), transparent 75%);"></div>
+                        <div class="absolute inset-0 text-slate-900/[0.05] dark:text-white/[0.05]" style="-webkit-mask-image: linear-gradient(to right, transparent, black 55%); mask-image: linear-gradient(to right, transparent, black 55%);">
+                            <svg class="h-full w-full" aria-hidden="true">
+                                <defs><pattern id="grid-pattern" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="currentColor"></circle></pattern></defs>
+                                <rect width="100%" height="100%" fill="url(#grid-pattern)"></rect>
+                            </svg>
+                        </div>
+                        <div class="absolute inset-0 pt-16 pb-4">
+                            <canvas id="heroProgressChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Content Overlay -->
+                    <div class="pointer-events-none relative z-10 flex flex-1 flex-col px-8 pt-7">
+                        <div class="flex items-center justify-between gap-4 w-full">
+                            <h3 class="text-[17px] font-semibold tracking-tight text-slate-800 dark:text-slate-100">Faturamento Total (Projeção)</h3>
+                            <div class="flex items-center gap-3.5 text-[14px]">
+                                <span class="flex items-center gap-1 font-medium text-emerald-500"><i data-lucide="arrow-up" class="w-4 h-4"></i> 24.5%</span>
+                                <span class="text-slate-500 font-medium bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-full pointer-events-auto cursor-pointer">Últimos 30 dias <i data-lucide="chevron-down" class="w-3 h-3 inline"></i></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+                            <span class="flex items-center gap-1.5 text-[12px] text-slate-400 font-medium">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Receita Recorrente
+                            </span>
+                        </div>
+
+                        <div class="mt-8 text-[72px] font-medium leading-none tracking-tight text-slate-800 dark:text-white" id="hero-total-value">
+                            R$ 42.500
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="relative z-10 flex items-center justify-between gap-4 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-dark-900/50 px-8 py-4 text-[14px]">
+                        <div>
+                            <span class="font-medium text-emerald-500">+ R$ 8.350</span> <span class="text-slate-500">neste período</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-[12px] text-slate-400">
+                            <span><span class="font-medium text-slate-700 dark:text-slate-200">R$ 48k</span> pico</span> <span class="opacity-40">·</span>
+                            <span><span class="font-medium text-slate-700 dark:text-slate-200">R$ 25k</span> baixa</span> <span class="opacity-40">·</span>
+                            <span><span class="font-medium text-slate-700 dark:text-slate-200">R$ 36k</span> média</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs Premium -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <div class="glass-panel p-7 rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
+                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mb-6"><i data-lucide="flame" class="w-6 h-6"></i></div>
+                        <h3 class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-widest mb-1">Negociações Ativas</h3>
+                        <div class="text-4xl font-black text-slate-800 dark:text-white tracking-tight" id="kpi-leads">0</div>
+                    </div>
+
+                    <div class="glass-panel p-7 rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
+                        <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-6"><i data-lucide="briefcase" class="w-6 h-6"></i></div>
+                        <h3 class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-widest mb-1">Carteira Ativa</h3>
+                        <div class="text-4xl font-black text-slate-800 dark:text-white tracking-tight" id="kpi-ativos">0</div>
+                    </div>
+
+                    <div class="glass-panel p-7 rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-6"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
+                        <h3 class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-widest mb-1">MRR (Receita Recorrente)</h3>
+                        <div class="text-4xl font-black text-slate-800 dark:text-white tracking-tight" id="kpi-mensal">R$ 0</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-voxe-600 to-blue-700 p-7 rounded-3xl shadow-glow relative overflow-hidden text-white border border-white/10">
+                        <div class="absolute -right-6 -top-6 opacity-10"><i data-lucide="gem" class="w-40 h-40"></i></div>
+                        <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 text-white"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+                        <h3 class="text-white/70 font-bold text-xs uppercase tracking-widest mb-1">Volume Fechado (Total)</h3>
+                        <div class="text-4xl font-black text-white tracking-tight" id="kpi-total">R$ 0</div>
+                    </div>
+                </div>
+
+                <!-- Charts Area -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-panel p-8 rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm">
+                        <div class="flex justify-between items-center mb-8 gap-4"><button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 rounded-lg shadow text-slate-600 dark:text-slate-300"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Canais de Aquisição</h3>
+                            <div class="p-2 bg-slate-100 dark:bg-white/5 rounded-lg text-slate-400"><i data-lucide="pie-chart" class="w-4 h-4"></i></div>
+                        </div>
+                        <div class="relative w-full h-72">
+                            <canvas id="leadsOriginChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-8 rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm">
+                        <div class="flex justify-between items-center mb-8 gap-4"><button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 rounded-lg shadow text-slate-600 dark:text-slate-300"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Saúde do Pipeline</h3>
+                            <div class="p-2 bg-slate-100 dark:bg-white/5 rounded-lg text-slate-400"><i data-lucide="bar-chart-3" class="w-4 h-4"></i></div>
+                        </div>
+                        <div class="relative w-full h-72">
+                            <canvas id="leadsFunnelChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: FUNIL UNIFICADO -->
+            <div id="page-funil" class="page-content">
+                <div class="mb-10">
+                    <h1 class="text-4xl font-extrabold tracking-tight mb-2">Pipeline de <span class="text-gradient">Vendas</span></h1>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">Acompanhe a jornada dos leads até o fechamento de contrato.</p>
+                </div>
+                
+                <!-- Visual 3D Funnel -->
+                <div class="glass-panel p-8 rounded-3xl mb-12 border border-slate-200 dark:border-white/5 hidden md:block relative">
+                    <h3 class="font-bold text-lg text-center text-slate-800 dark:text-slate-100 absolute top-8 w-full left-0 z-10">Volume e Conversão em 3D</h3>
+                    <div id="funnel3d-container" class="w-full h-[450px]"></div>
+                </div>
+
+                <div class="kanban-board" id="board-funil">
+                    <!-- Colunas geradas via JS -->
+                </div>
+            </div>
+
+            <!-- PAGE: AGENDA -->
+            <div id="page-agenda" class="page-content">
+                <div class="mb-10">
+                    <h1 class="text-4xl font-extrabold tracking-tight mb-2">Agenda <span class="text-gradient">Comercial</span></h1>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">Reuniões de alinhamento, apresentações e fechamentos.</p>
+                </div>
+
+                <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden p-2">
+                    <div class="p-6 pb-4 flex justify-between items-center">
+                        <h2 class="font-bold text-lg flex items-center gap-3 text-slate-800 dark:text-slate-100">
+                            <div class="p-2 bg-voxe-100 dark:bg-voxe-500/20 text-voxe-600 dark:text-voxe-400 rounded-xl"><i data-lucide="calendar" class="w-5 h-5"></i></div>
+                            Próximos Compromissos
+                        </h2>
+                    </div>
+                    <div class="p-6 pt-2">
+                        <div id="agenda-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <!-- Preenchido via JS -->
+                        </div>
+                        <div id="no-agenda" class="py-20 text-center hidden">
+                            <div class="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i data-lucide="coffee" class="w-10 h-10 text-slate-400 dark:text-slate-500"></i>
+                            </div>
+                            <p class="text-xl font-bold text-slate-700 dark:text-slate-300">Tempo livre para um café.</p>
+                            <p class="text-slate-500 dark:text-slate-400 mt-2">Nenhuma reunião comercial marcada para os próximos dias.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: CONFIGURAÇÕES -->
+            <div id="page-configuracoes" class="page-content">
+                <div class="mb-10">
+                    <h1 class="text-4xl font-extrabold tracking-tight mb-2">Cofre de <span class="text-gradient">Dados</span></h1>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">Seus dados residem 100% no seu navegador. Proteja-os com backups.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm p-10 flex flex-col items-start">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
+                            <i data-lucide="hard-drive-download" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-slate-800 dark:text-slate-100">Exportar Segurança</h3>
+                        <p class="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
+                            Criptografe e baixe sua carteira de clientes completa. Mantenha este arquivo seguro no seu Google Drive ou HD Externo.
+                        </p>
+                        <button onclick="exportBackup()" class="mt-auto w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl">
+                            <i data-lucide="download" class="w-5 h-5"></i> Gerar Backup Offline
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm p-10 flex flex-col items-start">
+                        <div class="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
+                            <i data-lucide="folder-sync" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-slate-800 dark:text-slate-100">Sincronizar Arquivo</h3>
+                        <p class="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
+                            Selecione um arquivo de backup (.json) exportado anteriormente para recuperar toda a base de dados instantaneamente.
+                        </p>
+                        <div class="relative w-full mt-auto">
+                            <input type="file" id="import-file" accept=".json" onchange="importBackup(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <button type="button" class="w-full border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-dark-900 text-slate-600 dark:text-slate-400 py-4 rounded-2xl font-bold transition flex items-center justify-center gap-3 hover:border-voxe-400 hover:text-voxe-600 dark:hover:text-voxe-400">
+                                <i data-lucide="upload-cloud" class="w-5 h-5"></i> Localizar Arquivo .json
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal Novo/Editar Lead (Premium) -->
+    <div id="modal-new-lead" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white dark:bg-dark-900 rounded-[2rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-200 dark:border-white/10">
+            <div class="px-10 py-6 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-dark-950">
+                <h2 class="text-2xl font-extrabold tracking-tight" id="modal-title">Ficha do Prospecto</h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white transition bg-white dark:bg-dark-900 rounded-full p-2.5 shadow-sm border border-slate-200 dark:border-white/10 hover:scale-110">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form id="form-new-lead" onsubmit="saveLead(event)" class="overflow-y-auto p-10 custom-scrollbar">
+                <input type="hidden" id="input-id" value="">
+                
+                <div class="space-y-8">
+                    <!-- Seção 1: Dados Base -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Razão / Nome <span class="text-red-400">*</span></label>
+                            <input id="input-nome" type="text" required class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 focus:ring-1 focus:ring-voxe-500 transition font-medium text-slate-800 dark:text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Contato (WhatsApp)</label>
+                            <div class="relative">
+                                <i data-lucide="phone" class="absolute left-4 top-3.5 w-4 h-4 text-emerald-500"></i>
+                                <input id="input-telefone" type="text" placeholder="11 90000 0000" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-emerald-500 transition font-medium text-slate-800 dark:text-slate-100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 2: Classificação -->
+                    <div class="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-dark-800/30">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Estratégia</label>
+                                <select id="input-tipo" onchange="updateOrigemOptions()" class="w-full bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
+                                    <option value="inbound">🎯 Inbound</option>
+                                    <option value="outbound">🏹 Outbound</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Canal</label>
+                                <select id="input-origem" class="w-full bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 font-semibold text-slate-700 dark:text-slate-200 shadow-sm"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Fase do Funil</label>
+                                <select id="input-status" class="w-full bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 font-bold text-slate-800 dark:text-slate-100 shadow-sm">
+                                    <option value="novo">🆕 Prospecção</option>
+                                    <option value="1_reuniao">🗣️ 1ª Reunião (Descoberta)</option>
+                                    <option value="2_reuniao">🤝 2ª Reunião (Proposta)</option>
+                                    <option value="cliente">🏆 Clientes Ativos</option>
+                                    <option value="perdido">❌ Antigos Clientes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 3: Agenda e Valores -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="md:col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Data Alinhamento</label>
+                            <input id="input-data" type="date" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 font-medium text-slate-700 dark:text-slate-200">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Horário</label>
+                            <input id="input-hora" type="time" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 font-medium text-slate-700 dark:text-slate-200">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Projeção MRR</label>
+                            <input id="input-mensal" type="number" step="0.01" placeholder="R$ 0,00" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500 font-bold text-slate-800 dark:text-slate-100">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">LTV Estimado</label>
+                            <input id="input-total" type="number" step="0.01" placeholder="R$ 0,00" class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500 font-bold text-slate-800 dark:text-slate-100">
+                        </div>
+                    </div>
+                    
+                    <!-- Anotações -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><i data-lucide="file-text" class="w-3 h-3"></i> Briefing / Observações</label>
+                        <textarea id="input-anotacoes" rows="3" placeholder="Dores do lead, escopo do projeto, link do drive..." class="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-voxe-500 font-medium text-slate-700 dark:text-slate-200 resize-none"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center mt-10 pt-6 border-t border-slate-100 dark:border-white/5">
+                    <button type="button" id="btn-delete" onclick="deleteFromModal()" class="px-4 py-2.5 text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition hidden flex items-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Descartar Lead
+                    </button>
+                    <div class="flex gap-4 ml-auto">
+                        <button type="button" onclick="closeModal()" class="px-6 py-3 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition">Cancelar</button>
+                        <button type="submit" class="px-8 py-3 bg-gradient-to-r from-voxe-500 to-blue-600 text-white font-bold rounded-xl transition-transform hover:scale-105 shadow-glow">Confirmar Cadastro</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+
+
+
