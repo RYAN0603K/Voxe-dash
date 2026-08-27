@@ -52,6 +52,7 @@
             window.addEventListener('touchmove', function() {}, {passive: false});
         });
     </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body class="bg-[#f8fafc] text-slate-800 dark:bg-dark-950 dark:text-slate-200">
     <!-- LOGIN BARRIER -->
@@ -126,6 +127,11 @@
             <button onclick="changePage('funil')" id="nav-funil" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all group">
                 <i data-lucide="layers" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Funil de Vendas</span>
             </button>
+            
+            <button onclick="changePage('cerebro')" id="nav-cerebro" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all group">
+                <i data-lucide="brain-circuit" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Cérebro Jarvis</span>
+            </button>
+
             <button onclick="changePage('agenda')" id="nav-agenda" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all group">
                 <i data-lucide="calendar-clock" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Agenda Ativa</span>
             </button>
@@ -133,9 +139,7 @@
 
         <div class="px-6 pt-4 pb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Avançado</div>
         <nav class="px-4 space-y-1.5 pb-6">
-            <button onclick="changePage('configuracoes')" id="nav-configuracoes" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all group">
-                <i data-lucide="database" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> <span class="font-semibold text-sm tracking-wide">Cofre de Dados</span>
-            </button>
+            
         </nav>
     </aside>
 
@@ -274,8 +278,11 @@
             <!-- PAGE: FUNIL UNIFICADO -->
             <div id="page-funil" class="page-content">
                 <div class="mb-10 flex justify-between items-start">
-                    <h1 class="text-4xl font-extrabold tracking-tight mb-2">Pipeline de <span class="text-gradient">Vendas</span></h1>
-                    <p class="text-slate-500 dark:text-slate-400 font-medium">Acompanhe a jornada dos leads até o fechamento de contrato.</p></div><button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-md text-slate-700 dark:text-slate-200"><i data-lucide="menu" class="w-6 h-6"></i></button>
+    <div>
+        <h1 class="text-4xl font-extrabold tracking-tight mb-2">Pipeline de <span class="text-gradient">Vendas</span></h1>
+        <p class="text-slate-500 dark:text-slate-400 font-medium">Acompanhe a jornada dos leads até o fechamento de contrato.</p>
+    </div>
+</div><button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-md text-slate-700 dark:text-slate-200"><i data-lucide="menu" class="w-6 h-6"></i></button>
                 
                 <!-- Visual 3D Funnel -->
                 <div class="glass-panel p-8 rounded-3xl mb-12 border border-slate-200 dark:border-white/5 hidden md:block relative">
@@ -289,10 +296,35 @@
             </div>
 
             <!-- PAGE: AGENDA -->
+            
+            <div id="page-cerebro" class="page-content">
+                <div class="mb-10 flex justify-between items-start">
+                    <div>
+                        <h1 class="text-4xl font-extrabold tracking-tight mb-2">Cérebro <span class="text-gradient">Voxe</span></h1>
+                        <p class="text-slate-500 dark:text-slate-400 font-medium">Análise e conexões em tempo real do sistema.</p>
+                    </div>
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-md text-slate-700 dark:text-slate-200"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                </div>
+                
+                <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden p-6 relative">
+                    <div class="absolute inset-0 z-0 bg-black/90 pointer-events-none rounded-3xl mix-blend-multiply"></div>
+                    <div class="absolute top-8 left-8 z-10 flex flex-col gap-2">
+                        <div class="flex items-center gap-2 text-emerald-400 font-mono text-sm">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> SISTEMA ONLINE
+                        </div>
+                        <h3 class="text-white font-bold text-xl font-mono">REDE NEURAL ATIVA</h3>
+                    </div>
+                    <div id="brain-container" class="w-full h-[60vh] min-h-[400px] rounded-2xl overflow-hidden cursor-crosshair"></div>
+                </div>
+            </div>
+
             <div id="page-agenda" class="page-content">
                 <div class="mb-10 flex justify-between items-start">
-                    <h1 class="text-4xl font-extrabold tracking-tight mb-2">Agenda <span class="text-gradient">Comercial</span></h1>
-                    <p class="text-slate-500 dark:text-slate-400 font-medium">Reuniões de alinhamento, apresentações e fechamentos.</p></div><button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-md text-slate-700 dark:text-slate-200"><i data-lucide="menu" class="w-6 h-6"></i></button>
+    <div>
+        <h1 class="text-4xl font-extrabold tracking-tight mb-2">Agenda <span class="text-gradient">Comercial</span></h1>
+        <p class="text-slate-500 dark:text-slate-400 font-medium">Reuniões de alinhamento, apresentações e fechamentos.</p>
+    </div>
+</div><button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-md text-slate-700 dark:text-slate-200"><i data-lucide="menu" class="w-6 h-6"></i></button>
 
                 <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden p-2">
                     <div class="p-6 pb-4 flex justify-between items-center">
@@ -316,44 +348,7 @@
             </div>
 
             <!-- PAGE: CONFIGURAÇÕES -->
-            <div id="page-configuracoes" class="page-content">
-                <div class="mb-10 flex justify-between items-start">
-                    <h1 class="text-4xl font-extrabold tracking-tight mb-2">Cofre de <span class="text-gradient">Dados</span></h1>
-                    <p class="text-slate-500 dark:text-slate-400 font-medium">Seus dados residem 100% no seu navegador. Proteja-os com backups.</p></div><button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-md text-slate-700 dark:text-slate-200"><i data-lucide="menu" class="w-6 h-6"></i></button>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm p-10 flex flex-col items-start">
-                        <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                            <i data-lucide="hard-drive-download" class="w-8 h-8"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3 text-slate-800 dark:text-slate-100">Exportar Segurança</h3>
-                        <p class="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
-                            Criptografe e baixe sua carteira de clientes completa. Mantenha este arquivo seguro no seu Google Drive ou HD Externo.
-                        </p>
-                        <button onclick="exportBackup()" class="mt-auto w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl">
-                            <i data-lucide="download" class="w-5 h-5"></i> Gerar Backup Offline
-                        </button>
-                    </div>
-
-                    <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm p-10 flex flex-col items-start">
-                        <div class="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                            <i data-lucide="folder-sync" class="w-8 h-8"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3 text-slate-800 dark:text-slate-100">Sincronizar Arquivo</h3>
-                        <p class="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
-                            Selecione um arquivo de backup (.json) exportado anteriormente para recuperar toda a base de dados instantaneamente.
-                        </p>
-                        <div class="relative w-full mt-auto">
-                            <input type="file" id="import-file" accept=".json" onchange="importBackup(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                            <button type="button" class="w-full border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-dark-900 text-slate-600 dark:text-slate-400 py-4 rounded-2xl font-bold transition flex items-center justify-center gap-3 hover:border-voxe-400 hover:text-voxe-600 dark:hover:text-voxe-400">
-                                <i data-lucide="upload-cloud" class="w-5 h-5"></i> Localizar Arquivo .json
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+            </main>
     </div>
 
     <!-- Modal Novo/Editar Lead (Premium) -->

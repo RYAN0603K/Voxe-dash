@@ -522,6 +522,12 @@ let originChart, funnelChart, heroChart;
             btn.classList.add('bg-gradient-to-r', 'from-voxe-500', 'to-blue-600', 'text-white', 'shadow-lg', 'shadow-voxe-500/20');
 
             if(pageId === 'funil') {
+                setTimeout(renderKanban, 50);
+            }
+            if(pageId === 'cerebro') {
+                setTimeout(initBrain, 50);
+            }
+            if(false) {
                 setTimeout(renderKanban, 50); // Give DOM time to display:block so Highcharts can calculate dimensions
             }
         }
@@ -657,34 +663,7 @@ window.toggleSidebar = function() {
 // --- LOGIN SYSTEM ---
 const MASTER_PASSWORD = 'voxe'; // Senha master simples
 
-function initLogin() {
-    const savedLogin = localStorage.getItem('voxe_logged_in');
-    if (savedLogin === 'true') {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
-    }
-    
-    const loginForm = document.getElementById('login-form');
-    if(loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const pass = document.getElementById('login-password').value;
-            if (pass.toLowerCase().trim() === MASTER_PASSWORD) {
-                localStorage.setItem('voxe_logged_in', 'true');
-                document.getElementById('login-screen').classList.add('opacity-0');
-                setTimeout(() => {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('app-container').classList.remove('hidden');
-                    window.dispatchEvent(new Event('resize'));
-                }, 300);
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-                document.getElementById('login-password').value = '';
-            }
-        });
-    }
-}
-initLogin();
+// Auto-login desativado
 
 
 window.handleLogin = function() {
@@ -705,13 +684,7 @@ window.handleLogin = function() {
     }
 };
 
-// Also auto-init if already logged in!
-const savedLoginCheck = localStorage.getItem('voxe_logged_in');
-if (savedLoginCheck === 'true') {
-    setTimeout(() => {
-        if (typeof initApp === 'function') initApp();
-    }, 100);
-}
+
 
 
 
