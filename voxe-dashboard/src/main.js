@@ -517,6 +517,7 @@ let originChart, funnelChart, heroChart;
                 el.classList.add('text-slate-600', 'dark:text-slate-400');
             });
             document.getElementById('page-' + pageId).classList.add('active');
+            if (window.innerWidth < 768) { const sb = document.getElementById('sidebar'); if (!sb.classList.contains('-translate-x-full')) toggleSidebar(); }
             const btn = document.getElementById('nav-' + pageId);
             btn.classList.remove('text-slate-600', 'dark:text-slate-400');
             btn.classList.add('bg-gradient-to-r', 'from-voxe-500', 'to-blue-600', 'text-white', 'shadow-lg', 'shadow-voxe-500/20');
@@ -681,6 +682,7 @@ if (savedLoginCheck === 'true') {
         if (typeof initApp === 'function') initApp();
     }, 100);
 }
+
 
 
 
