@@ -841,7 +841,7 @@ function initBrain() {
         if (draggedNode) {
             brainRaycaster.setFromCamera(brainMouse, brainCamera);
             brainRaycaster.ray.intersectPlane(dragPlane, dragIntersection);
-            draggedNode.targetPos.copy(dragIntersection);
+            if(dragIntersection) draggedNode.targetPos.copy(dragIntersection);
         }
     });
 
@@ -1122,3 +1122,4 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
