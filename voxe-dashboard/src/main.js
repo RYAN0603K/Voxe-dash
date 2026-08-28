@@ -1,4 +1,4 @@
-let originChart, funnelChart, heroChart;
+﻿let originChart, funnelChart, heroChart;
         let crmData = [];
         
         // --- 3D INTERACTIVITY LOGIC ---
@@ -697,3 +697,152 @@ window.handleLogin = function() {
 
 
 
+
+
+// ==========================================
+// BRAIN NETWORK (JARVIS PLEXUS)
+// ==========================================
+let brainInitialized = false;
+let brainScene, brainCamera, brainRenderer, brainParticles, brainLines, brainLinePositions, brainLineColors;
+let brainParticlesData = [];
+const maxParticleCount = 250;
+const particleCount = 150;
+const r = 800; 
+
+function initBrain() {
+    if (brainInitialized) return;
+    if (typeof THREE === 'undefined') { setTimeout(initBrain, 500); return; }
+    brainInitialized = true;
+    const container = document.getElementById('brain-container');
+    if (!container) return;
+
+    brainScene = new THREE.Scene();
+    brainCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 4000);
+    brainCamera.position.z = 1750;
+    const group = new THREE.Group();
+    brainScene.add(group);
+
+    const pMaterial = new THREE.PointsMaterial({
+        color: 0x34d399, size: 5, blending: THREE.AdditiveBlending, transparent: true, sizeAttenuation: true
+    });
+
+    const particles = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(maxParticleCount * 3);
+    for (let i = 0; i < maxParticleCount; i++) {
+        particlePositions[i * 3] = Math.random() * r - r / 2;
+        particlePositions[i * 3 + 1] = Math.random() * r - r / 2;
+        particlePositions[i * 3 + 2] = Math.random() * r - r / 2;
+        brainParticlesData.push({
+            velocity: new THREE.Vector3(-1 + Math.random() * 2, -1 + Math.random() * 2, -1 + Math.random() * 2).normalize().multiplyScalar(Math.random() * 2 + 0.5),
+            numConnections: 0
+        });
+    }
+
+    particles.setDrawRange(0, particleCount);
+    particles.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    brainParticles = new THREE.Points(particles, pMaterial);
+    group.add(brainParticles);
+
+    const segments = maxParticleCount * maxParticleCount;
+    brainLinePositions = new Float32Array(segments * 3);
+    brainLineColors = new Float32Array(segments * 3);
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(brainLinePositions, 3).setUsage(THREE.DynamicDrawUsage));
+    geometry.setAttribute('color', new THREE.BufferAttribute(brainLineColors, 3).setUsage(THREE.DynamicDrawUsage));
+    geometry.computeBoundingSphere();
+    geometry.setDrawRange(0, 0);
+
+    const material = new THREE.LineBasicMaterial({ vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.8 });
+    brainLines = new THREE.LineSegments(geometry, material);
+    group.add(brainLines);
+
+    brainRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    brainRenderer.setPixelRatio(window.devicePixelRatio);
+    brainRenderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(brainRenderer.domElement);
+
+    let mouseX = 0, mouseY = 0;
+    container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        mouseX = ((e.clientX - rect.left) / container.clientWidth) * 2 - 1;
+        mouseY = -((e.clientY - rect.top) / container.clientHeight) * 2 + 1;
+    });
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if (!document.getElementById('page-cerebro').classList.contains('active')) return;
+
+        group.rotation.y += 0.002;
+        group.rotation.x += 0.001;
+        
+        brainCamera.position.x += (mouseX * 500 - brainCamera.position.x) * 0.05;
+        brainCamera.position.y += (mouseY * 500 - brainCamera.position.y) * 0.05;
+        brainCamera.lookAt(brainScene.position);
+
+        let vertexpos = 0, colorpos = 0, numConnected = 0;
+        for (let i = 0; i < particleCount; i++) brainParticlesData[i].numConnections = 0;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particleData = brainParticlesData[i];
+            particlePositions[i * 3] += particleData.velocity.x;
+            particlePositions[i * 3 + 1] += particleData.velocity.y;
+            particlePositions[i * 3 + 2] += particleData.velocity.z;
+
+            if (particlePositions[i * 3 + 1] < -r / 2 || particlePositions[i * 3 + 1] > r / 2) particleData.velocity.y = -particleData.velocity.y;
+            if (particlePositions[i * 3] < -r / 2 || particlePositions[i * 3] > r / 2) particleData.velocity.x = -particleData.velocity.x;
+            if (particlePositions[i * 3 + 2] < -r / 2 || particlePositions[i * 3 + 2] > r / 2) particleData.velocity.z = -particleData.velocity.z;
+
+            for (let j = i + 1; j < particleCount; j++) {
+                const particleDataB = brainParticlesData[j];
+                const dx = particlePositions[i * 3] - particlePositions[j * 3];
+                const dy = particlePositions[i * 3 + 1] - particlePositions[j * 3 + 1];
+                const dz = particlePositions[i * 3 + 2] - particlePositions[j * 3 + 2];
+                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                if (dist < 150) {
+                    particleData.numConnections++;
+                    particleDataB.numConnections++;
+
+                    brainLinePositions[vertexpos++] = particlePositions[i * 3];
+                    brainLinePositions[vertexpos++] = particlePositions[i * 3 + 1];
+                    brainLinePositions[vertexpos++] = particlePositions[i * 3 + 2];
+
+                    brainLinePositions[vertexpos++] = particlePositions[j * 3];
+                    brainLinePositions[vertexpos++] = particlePositions[j * 3 + 1];
+                    brainLinePositions[vertexpos++] = particlePositions[j * 3 + 2];
+
+                    const alpha = 1.0 - dist / 150;
+                    brainLineColors[colorpos++] = 0.05;
+                    brainLineColors[colorpos++] = 0.5 + (0.5 * alpha);
+                    brainLineColors[colorpos++] = 0.8;
+
+                    brainLineColors[colorpos++] = 0.05;
+                    brainLineColors[colorpos++] = 0.5 + (0.5 * alpha);
+                    brainLineColors[colorpos++] = 0.8;
+                    
+                    numConnected++;
+                }
+            }
+        }
+
+        brainLines.geometry.setDrawRange(0, numConnected * 2);
+        brainLines.geometry.attributes.position.needsUpdate = true;
+        brainLines.geometry.attributes.color.needsUpdate = true;
+        brainParticles.geometry.attributes.position.needsUpdate = true;
+
+        brainRenderer.render(brainScene, brainCamera);
+    }
+    animate();
+}
+
+window.addEventListener('resize', () => {
+    if(brainRenderer && brainCamera) {
+        const container = document.getElementById('brain-container');
+        if(container) {
+            brainCamera.aspect = container.clientWidth / container.clientHeight;
+            brainCamera.updateProjectionMatrix();
+            brainRenderer.setSize(container.clientWidth, container.clientHeight);
+        }
+    }
+});
