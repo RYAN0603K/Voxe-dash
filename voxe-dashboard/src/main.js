@@ -1198,8 +1198,13 @@ function setTimeFilter(mode) {
         t.classList.remove('active-tab');
         t.classList.add('text-slate-500');
     });
-    event.target.classList.add('active-tab');
-    event.target.classList.remove('text-slate-500');
+    
+    // Find the button safely instead of using global event
+    const activeBtn = document.querySelector(`button[onclick="setTimeFilter('${mode}')"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active-tab');
+        activeBtn.classList.remove('text-slate-500');
+    }
     
     // Update hero title
     const titleEl = document.getElementById('hero-title-label');
