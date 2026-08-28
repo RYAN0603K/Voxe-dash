@@ -447,9 +447,13 @@ let originChart, funnelChart, heroChart;
             });
 
             filteredData.forEach(l => {
-                totalRev += l.total;
-                if(l.status === 'cliente') { mrr += l.mensal; } 
-                else if(l.status !== 'perdido') { if(l.tipo === 'inbound') countIn++; else countOut++; }
+                if (l.status === 'cliente') { 
+                    totalRev += l.total; // Faturamento is only from clients
+                    mrr += l.mensal; 
+                } else if (l.status !== 'perdido') { 
+                    if (l.tipo === 'inbound') countIn++; else countOut++; 
+                    // l.total in this case would be pipeline, not faturamento
+                }
                 origins[l.origem] = (origins[l.origem] || 0) + 1;
                 if(funnel[l.status] !== undefined) funnel[l.status]++;
             });
