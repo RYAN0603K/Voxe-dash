@@ -1013,7 +1013,7 @@ function buildDataNodes() {
         const hubNode = hubMap[lead.status];
         if(!hubNode) return; // Ignore if status invalid
 
-        const geo = new THREE.SphereGeometry(6, 16, 16);
+        const geo = new THREE.SphereGeometry(12, 16, 16);
         const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, blending: THREE.AdditiveBlending });
         const mesh = new THREE.Mesh(geo, mat);
         
@@ -1050,10 +1050,19 @@ function buildDataNodes() {
         connectionLines.add(lines);
     }
 
-    // Bind DragControls if initialized
+        // Bind DragControls if initialized
     if(brainDragControls) {
         brainDragControls.dispose();
         brainDragControls = new THREE.DragControls(leadParticlesGroup.children, brainCamera, brainRenderer.domElement);
+        
+        // Fix conflict between OrbitControls and DragControls
+        brainDragControls.addEventListener('hoveron', function () {
+            brainControls.enabled = false;
+        });
+        brainDragControls.addEventListener('hoveroff', function () {
+            brainControls.enabled = true;
+        });
+        
         brainDragControls.addEventListener('dragstart', function (event) {
             brainControls.enabled = false;
             brainControls.autoRotate = false;
@@ -1114,3 +1123,5 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
+
