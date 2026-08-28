@@ -1,0 +1,5 @@
+{
+  "buildCommand": "echo 'No build required, serving pre-built root index.html'",
+  "outputDirectory": ".",
+  "framework": null
+}
