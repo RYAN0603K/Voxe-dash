@@ -863,11 +863,11 @@ function buildDataNodes() {
     nodeDataList = [];
 
     const hubs = [
-        { id: 'novo', label: 'Leads Novos', color: 0x94a3b8, pos: new THREE.Vector3(-300, 0, -150) },
-        { id: '1_Reunião', label: '1ª Reunião', color: 0xfbbf24, pos: new THREE.Vector3(-150, 0, 150) },
-        { id: '2_Reunião', label: '2ª Reunião', color: 0xa78bfa, pos: new THREE.Vector3(100, 0, 200) },
-        { id: 'cliente', label: 'Clientes Ativos', color: 0x10b981, pos: new THREE.Vector3(300, 0, 0) },
-        { id: 'perdido', label: 'Antigos', color: 0xf87171, pos: new THREE.Vector3(150, 0, -200) }
+        { id: 'novo', label: 'Leads Novos', color: 0x00ffff, pos: new THREE.Vector3(-300, 0, -150) },
+        { id: '1_Reunião', label: '1ª Reunião', color: 0xffea00, pos: new THREE.Vector3(-150, 0, 150) },
+        { id: '2_Reunião', label: '2ª Reunião', color: 0xcc00ff, pos: new THREE.Vector3(100, 0, 200) },
+        { id: 'cliente', label: 'Clientes Ativos', color: 0x00ff66, pos: new THREE.Vector3(300, 0, 0) },
+        { id: 'perdido', label: 'Antigos', color: 0xff0055, pos: new THREE.Vector3(150, 0, -200) }
     ];
 
     const hubMap = {};
@@ -880,7 +880,7 @@ function buildDataNodes() {
         
         // Glow Halo
         const haloGeo = new THREE.SphereGeometry(25, 32, 32);
-        const haloMat = new THREE.MeshBasicMaterial({ color: h.color, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
+        const haloMat = new THREE.MeshBasicMaterial({ color: h.color, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
         const halo = new THREE.Mesh(haloGeo, haloMat);
         mesh.add(halo);
         
@@ -945,7 +945,7 @@ function buildDataNodes() {
         const lineGeo = new THREE.BufferGeometry();
         lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3).setUsage(THREE.DynamicDrawUsage));
         lineGeo.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
-        const lineMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+        const lineMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
         const lines = new THREE.LineSegments(lineGeo, lineMat);
         connectionLines.add(lines);
     }
@@ -961,3 +961,4 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
