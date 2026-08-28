@@ -1,7 +1,8 @@
-{
+﻿{
   "name": "voxe-crm-static",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo 'Build bypass by Antigravity'"
+    "build": "vite build"
   }
 }
+

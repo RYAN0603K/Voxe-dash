@@ -939,7 +939,7 @@ function initBrain() {
             if(node.type === 'lead') {
                 if (node.isDragging && node.targetPos) {
                     // Fluid delayzinho (spring physics)
-                    node.mesh.position.lerp(node.targetPos, 0.15);
+                    node.mesh.position.lerp(node.targetPos, 0.03);
                 } else {
                     // Smoothly orbit around hub
                     const hub = node.hubObj;
@@ -1122,5 +1122,6 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
 
 
