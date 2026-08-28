@@ -416,7 +416,37 @@ let originChart, funnelChart, heroChart;
             let mrr = 0, totalRev = 0, countIn = 0, countOut = 0;
             const origins = {}; const funnel = { 'novo':0, '1_reuniao': 0, '2_reuniao': 0, 'cliente': 0, 'perdido': 0 };
 
-            crmData.forEach(l => {
+            const now = new Date();
+            let filteredData = crmData.filter(l => {
+                if (currentTimeFilter === 'live') return true;
+                
+                let leadDate;
+                if (l.dataReuniao) {
+                    leadDate = new Date(l.dataReuniao + 'T12:00:00');
+                } else if (l.criado_em) {
+                    leadDate = new Date(l.criado_em);
+                } else {
+                    leadDate = new Date(l.id); // id is Date.now()
+                }
+
+                if (isNaN(leadDate.getTime())) return true; // if date is invalid, include it
+
+                const isSameMonth = leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
+                const isSameYear = leadDate.getFullYear() === now.getFullYear();
+                const isLastYear = leadDate.getFullYear() === now.getFullYear() - 1;
+                const diffTime = Math.abs(now - leadDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (currentTimeFilter === 'month') return isSameMonth;
+                if (currentTimeFilter === '2months') return diffDays <= 60;
+                if (currentTimeFilter === '3months') return diffDays <= 90;
+                if (currentTimeFilter === 'year') return isSameYear;
+                if (currentTimeFilter === 'lastyear') return isLastYear;
+                
+                return true;
+            });
+
+            filteredData.forEach(l => {
                 totalRev += l.total;
                 if(l.status === 'cliente') { mrr += l.mensal; } 
                 else if(l.status !== 'perdido') { if(l.tipo === 'inbound') countIn++; else countOut++; }
@@ -436,7 +466,7 @@ let originChart, funnelChart, heroChart;
                 heroTotal.innerText = formatBRL(mrr + totalRev);
             }
             if (heroGrowth) {
-                const totalLeads = crmData.length;
+                const totalLeads = filteredData.length;
                 const ativos = funnel['cliente'];
                 if (totalLeads > 0) {
                     const taxaConversao = ((ativos / totalLeads) * 100).toFixed(1);
@@ -1169,6 +1199,7 @@ function setTimeFilter(mode) {
     
     // Update hero title
     const titleEl = document.getElementById('hero-title-label');
+    const kpiLabel = document.getElementById('kpi-total-label');
     if (titleEl) {
         const titles = {
             'live': '🟢 Operação Ao Vivo',
@@ -1179,6 +1210,17 @@ function setTimeFilter(mode) {
             'lastyear': 'Faturamento — Ano Passado'
         };
         titleEl.innerText = titles[mode] || 'Operação Ao Vivo';
+    }
+    if (kpiLabel) {
+        const kpiTitles = {
+            'live': 'Faturamento (Total Ao Vivo)',
+            'month': 'Faturamento (Este Mês)',
+            '2months': 'Faturamento (2 Meses)',
+            '3months': 'Faturamento (3 Meses)',
+            'year': 'Faturamento (Este Ano)',
+            'lastyear': 'Faturamento (Ano Passado)'
+        };
+        kpiLabel.innerText = kpiTitles[mode] || 'Faturamento Total';
     }
     
     renderDashboard();
