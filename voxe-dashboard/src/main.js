@@ -771,7 +771,7 @@ function initBrain() {
       })
       .catch(() => {
           typeWriterEffect('jarvis-greeting', greeting, 40, () => {
-              typeWriterEffect('jarvis-stat-1', '> SISTEMAS ONLINE. SINCRONIZANDO DADOS...', 20, () => {
+              typeWriterEffect('jarvis-stat-1', '> SISTEMAS ONLINE. JD MITSUTANI: ACESSO BLOQUEADO PELO NAVEGADOR.', 20, () => {
                   setTimeout(() => {
                       typeWriterEffect('jarvis-stat-2', '> TOTAL DE LEADS: ' + crmData.length, 15, () => {
                           typeWriterEffect('jarvis-stat-3', '> PROPOSTAS ABERTAS: ' + leadsPropostas, 15, () => {
@@ -1122,4 +1122,5 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
 
