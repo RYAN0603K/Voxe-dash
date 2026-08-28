@@ -53,6 +53,7 @@
         });
     </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body class="bg-[#f8fafc] text-slate-800 dark:bg-dark-950 dark:text-slate-200">
     <!-- LOGIN BARRIER -->
@@ -306,7 +307,7 @@
                     <button onclick="toggleSidebar()" class="md:hidden p-2 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-md text-slate-700 dark:text-slate-200"><i data-lucide="menu" class="w-6 h-6"></i></button>
                 </div>
                 
-                <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden p-6 relative">
+                <div class="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden relative">
                     <div class="absolute inset-0 z-0 bg-black/90 pointer-events-none rounded-3xl mix-blend-multiply"></div>
                     <div class="absolute top-8 left-8 z-10 flex flex-col gap-2">
                         <div class="flex items-center gap-2 text-emerald-400 font-mono text-sm">
@@ -315,7 +316,7 @@
                         <h3 class="text-white font-bold text-xl font-mono">REDE NEURAL ATIVA</h3>
                     </div>
                     <div id="brain-tooltip" class="absolute z-50 bg-slate-900/90 backdrop-blur-md text-white px-4 py-3 rounded-xl border border-white/10 shadow-2xl pointer-events-none hidden" style="left:0; top:0; transform: translate(-50%, -120%); transition: opacity 0.1s;"></div>
-                    <div id="brain-container" class="w-full h-[60vh] min-h-[400px] rounded-2xl overflow-hidden cursor-crosshair"></div>
+                    <div id="brain-container" class="w-full h-[75vh] min-h-[600px] rounded-2xl overflow-hidden cursor-crosshair"></div>
                 </div>
             </div>
 
@@ -451,6 +452,7 @@
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>
+
 
 
 

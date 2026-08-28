@@ -700,16 +700,17 @@ window.handleLogin = function() {
 
 
 
+
 // ==========================================
 // DATA-DRIVEN BRAIN NETWORK (CRM LEADS)
 // ==========================================
 let brainInitialized = false;
-let brainScene, brainCamera, brainRenderer, brainRaycaster, brainMouse;
+let brainScene, brainCamera, brainRenderer, brainRaycaster, brainMouse, brainControls;
 let leadParticlesGroup, hubParticlesGroup, connectionLines;
 let nodeDataList = [];
 
 function initBrain() {
-    if (typeof THREE === 'undefined') { setTimeout(initBrain, 500); return; }
+    if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') { setTimeout(initBrain, 500); return; }
     
     const container = document.getElementById('brain-container');
     if (!container) return;
@@ -723,7 +724,7 @@ function initBrain() {
     brainScene = new THREE.Scene();
     brainCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 5000);
     brainCamera.position.z = 800;
-    brainCamera.position.y = 200;
+    brainCamera.position.y = 300;
     
     const group = new THREE.Group();
     brainScene.add(group);
@@ -741,17 +742,21 @@ function initBrain() {
     brainRenderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(brainRenderer.domElement);
 
+    // OrbitControls for Zoom and Pan
+    brainControls = new THREE.OrbitControls(brainCamera, brainRenderer.domElement);
+    brainControls.enableDamping = true;
+    brainControls.dampingFactor = 0.05;
+    brainControls.autoRotate = true;
+    brainControls.autoRotateSpeed = 0.5;
+
     brainRaycaster = new THREE.Raycaster();
     brainRaycaster.params.Points.threshold = 15;
     brainMouse = new THREE.Vector2(-9999, -9999);
 
-    let mouseX = 0, mouseY = 0;
     container.addEventListener('mousemove', (e) => {
         const rect = container.getBoundingClientRect();
-        mouseX = ((e.clientX - rect.left) / container.clientWidth) * 2 - 1;
-        mouseY = -((e.clientY - rect.top) / container.clientHeight) * 2 + 1;
-        brainMouse.x = mouseX;
-        brainMouse.y = mouseY;
+        brainMouse.x = ((e.clientX - rect.left) / container.clientWidth) * 2 - 1;
+        brainMouse.y = -((e.clientY - rect.top) / container.clientHeight) * 2 + 1;
     });
 
     container.addEventListener('mouseleave', () => {
@@ -766,17 +771,11 @@ function initBrain() {
 
     buildDataNodes();
 
-    let angle = 0;
     function animate() {
         requestAnimationFrame(animate);
         if (!document.getElementById('page-cerebro').classList.contains('active')) return;
 
-        angle += 0.002;
-        group.rotation.y = angle;
-        
-        brainCamera.position.x += (mouseX * 200 - brainCamera.position.x) * 0.05;
-        brainCamera.position.y += ((mouseY * 100 + 200) - brainCamera.position.y) * 0.05;
-        brainCamera.lookAt(brainScene.position);
+        brainControls.update();
 
         const time = Date.now() * 0.0005;
         nodeDataList.forEach((node, i) => {
@@ -838,7 +837,8 @@ function initBrain() {
                 tooltip.classList.add('opacity-100');
                 
                 // Highlight hit
-                hit.object.scale.set(2,2,2);
+                hit.object.scale.set(3,3,3);
+                brainControls.autoRotate = false; // Stop rotating when hovering
             }
         } else {
             document.body.style.cursor = 'default';
@@ -848,6 +848,7 @@ function initBrain() {
             }
             // Reset scales
             leadParticlesGroup.children.forEach(c => c.scale.set(1,1,1));
+            brainControls.autoRotate = true; // Resume rotating
         }
 
         brainRenderer.render(brainScene, brainCamera);
@@ -871,15 +872,32 @@ function buildDataNodes() {
 
     const hubMap = {};
     hubs.forEach(h => {
-        const geo = new THREE.SphereGeometry(15, 16, 16);
-        const mat = new THREE.MeshBasicMaterial({ color: h.color, wireframe: true });
+        // Core Bright Sphere
+        const geo = new THREE.SphereGeometry(15, 32, 32);
+        const mat = new THREE.MeshBasicMaterial({ color: h.color, blending: THREE.AdditiveBlending });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.copy(h.pos);
         
-        const haloGeo = new THREE.SphereGeometry(22, 16, 16);
-        const haloMat = new THREE.MeshBasicMaterial({ color: h.color, transparent: true, opacity: 0.15, wireframe: true });
+        // Glow Halo
+        const haloGeo = new THREE.SphereGeometry(25, 32, 32);
+        const haloMat = new THREE.MeshBasicMaterial({ color: h.color, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
         const halo = new THREE.Mesh(haloGeo, haloMat);
         mesh.add(halo);
+        
+        // Text Label (Sprite)
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#' + h.color.toString(16).padStart(6, '0');
+        ctx.font = 'bold 24px "Inter", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label.toUpperCase(), 128, 64);
+        const tex = new THREE.CanvasTexture(canvas);
+        const spriteMat = new THREE.SpriteMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending });
+        const sprite = new THREE.Sprite(spriteMat);
+        sprite.scale.set(100, 50, 1);
+        sprite.position.y = 40;
+        mesh.add(sprite);
 
         hubParticlesGroup.add(mesh);
         
@@ -895,12 +913,12 @@ function buildDataNodes() {
         const hubNode = hubMap[lead.status];
         if(!hubNode) return;
 
-        const geo = new THREE.SphereGeometry(6, 8, 8);
-        const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const geo = new THREE.SphereGeometry(5, 16, 16);
+        const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, blending: THREE.AdditiveBlending });
         const mesh = new THREE.Mesh(geo, mat);
         
         const angle = Math.random() * Math.PI * 2;
-        const radius = 40 + Math.random() * 80;
+        const radius = 60 + Math.random() * 80;
         
         mesh.position.x = hubNode.mesh.position.x + Math.cos(angle) * radius;
         mesh.position.y = hubNode.mesh.position.y;
@@ -915,19 +933,19 @@ function buildDataNodes() {
             hubObj: hubNode,
             angle: angle,
             orbitRadius: radius,
-            speed: 0.002 + Math.random() * 0.005 * (Math.random()>0.5?1:-1)
+            speed: 0.005 + Math.random() * 0.01
         });
 
         linePositions.push(0,0,0, 0,0,0);
         const c = new THREE.Color(hubNode.color);
-        lineColors.push(c.r, c.g, c.b, c.r*0.2, c.g*0.2, c.b*0.2);
+        lineColors.push(c.r, c.g, c.b, c.r, c.g, c.b);
     });
 
     if(linePositions.length > 0) {
         const lineGeo = new THREE.BufferGeometry();
         lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3).setUsage(THREE.DynamicDrawUsage));
         lineGeo.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
-        const lineMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.4 });
+        const lineMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
         const lines = new THREE.LineSegments(lineGeo, lineMat);
         connectionLines.add(lines);
     }
