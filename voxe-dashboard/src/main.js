@@ -706,8 +706,8 @@ let brainInitialized = false;
 let brainScene, brainCamera, brainRenderer, brainParticles, brainLines, brainLinePositions, brainLineColors;
 let brainParticlesData = [];
 const maxParticleCount = 250;
-const particleCount = 150;
-const r = 800; 
+const particleCount = 250;
+const r = 1000; 
 
 function initBrain() {
     if (brainInitialized) return;
@@ -723,7 +723,7 @@ function initBrain() {
     brainScene.add(group);
 
     const pMaterial = new THREE.PointsMaterial({
-        color: 0x34d399, size: 5, blending: THREE.AdditiveBlending, transparent: true, sizeAttenuation: true
+        color: 0x00ffff, size: 8, blending: THREE.AdditiveBlending, transparent: true, sizeAttenuation: true
     });
 
     const particles = new THREE.BufferGeometry();
@@ -800,7 +800,7 @@ function initBrain() {
                 const dz = particlePositions[i * 3 + 2] - particlePositions[j * 3 + 2];
                 const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-                if (dist < 150) {
+                if (dist < 200) {
                     particleData.numConnections++;
                     particleDataB.numConnections++;
 
@@ -812,14 +812,14 @@ function initBrain() {
                     brainLinePositions[vertexpos++] = particlePositions[j * 3 + 1];
                     brainLinePositions[vertexpos++] = particlePositions[j * 3 + 2];
 
-                    const alpha = 1.0 - dist / 150;
-                    brainLineColors[colorpos++] = 0.05;
-                    brainLineColors[colorpos++] = 0.5 + (0.5 * alpha);
-                    brainLineColors[colorpos++] = 0.8;
+                    const alpha = 1.0 - dist / 200;
+                    brainLineColors[colorpos++] = 0.1 * alpha;
+                    brainLineColors[colorpos++] = 0.8 * alpha;
+                    brainLineColors[colorpos++] = 1.0 * alpha;
 
-                    brainLineColors[colorpos++] = 0.05;
-                    brainLineColors[colorpos++] = 0.5 + (0.5 * alpha);
-                    brainLineColors[colorpos++] = 0.8;
+                    brainLineColors[colorpos++] = 0.1 * alpha;
+                    brainLineColors[colorpos++] = 0.8 * alpha;
+                    brainLineColors[colorpos++] = 1.0 * alpha;
                     
                     numConnected++;
                 }
@@ -846,3 +846,4 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
