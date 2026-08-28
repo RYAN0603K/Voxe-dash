@@ -183,10 +183,7 @@
             if (saved) {
                 crmData = JSON.parse(saved);
             } else {
-                crmData = [
-                    { id: 1, nome: 'Dr. Roberto (Clínica Odonto)', tipo: 'inbound', origem: 'instagram', status: '1_reuniao', dataReuniao: '2026-08-30', horaReuniao: '14:30', mensal: 1500, total: 9000, telefone: '11987654321', anotacoes: 'Quer focar em implantes.' },
-                    { id: 2, nome: 'E-commerce Moda Fitness', tipo: 'outbound', origem: 'linkedin', status: '2_reuniao', dataReuniao: '2026-08-28', horaReuniao: '10:00', mensal: 2500, total: 15000, telefone: '21999998888', anotacoes: 'Proposta enviada.' }
-                ];
+                crmData = [];
                 saveData();
             }
             refreshAllViews();
@@ -1122,6 +1119,7 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
 
 
 
