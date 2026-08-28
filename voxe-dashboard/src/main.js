@@ -427,10 +427,33 @@ let originChart, funnelChart, heroChart;
             document.getElementById('kpi-leads').innerText = (countIn + countOut);
             document.getElementById('kpi-ativos').innerText = funnel['cliente'];
             document.getElementById('kpi-mensal').innerText = formatBRL(mrr);
-                        document.getElementById('kpi-total').innerText = formatBRL(totalRev);
+            document.getElementById('kpi-total').innerText = formatBRL(totalRev);
             
+            // Hero card: show value based on time filter
             const heroTotal = document.getElementById('hero-total-value');
-            if (heroTotal) heroTotal.innerText = formatBRL(totalRev + mrrAtivo);
+            const heroGrowth = document.getElementById('hero-growth-pct');
+            if (heroTotal) {
+                heroTotal.innerText = formatBRL(mrr + totalRev);
+            }
+            if (heroGrowth) {
+                const totalLeads = crmData.length;
+                const ativos = funnel['cliente'];
+                if (totalLeads > 0) {
+                    const taxaConversao = ((ativos / totalLeads) * 100).toFixed(1);
+                    heroGrowth.innerHTML = '<i data-lucide="arrow-up" class="w-4 h-4"></i> ' + taxaConversao + '% conversão';
+                } else {
+                    heroGrowth.innerText = '';
+                }
+            }
+
+            // Update hero chart with real MRR data (single point for now, grows as leads are added)
+            if (heroChart) {
+                const chartVal = mrr + totalRev;
+                heroChart.data.labels = ['Agora'];
+                heroChart.data.datasets[0].data = [chartVal];
+                heroChart.options.scales.y.min = 0;
+                heroChart.update();
+            }
 
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -449,6 +472,8 @@ let originChart, funnelChart, heroChart;
                 funnelChart.options.scales.y.grid.color = gridColor;
                 funnelChart.update();
             }
+            
+            lucide.createIcons();
         }
 
         // ==========================================
@@ -550,9 +575,9 @@ let originChart, funnelChart, heroChart;
             heroChart = new Chart(ctxHero, {
                 type: 'line',
                 data: {
-                    labels: ['18 Mar', '21 Mar', '24 Mar', '27 Mar', '30 Mar', '02 Apr', '05 Apr', '08 Apr', '11 Apr', '14 Apr', '17 Apr', '20 Apr', '23 Apr', '26 Apr', '29 Apr', '02 May', '05 May', '08 May', '11 May'],
+                    labels: [],
                     datasets: [{
-                        data: [20000, 23000, 24000, 22000, 35600, 36000, 41000, 37000, 36000, 36600, 37000, 37000, 33200, 36200, 33600, 39000, 37600, 32400, 33200],
+                        data: [],
                         borderColor: '#10b981',
                         borderWidth: 3,
                         backgroundColor: gradient,
@@ -569,7 +594,7 @@ let originChart, funnelChart, heroChart;
                     plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, callbacks: { label: (ctx) => formatBRL(ctx.raw) } } },
                     scales: {
                         x: { display: false },
-                        y: { display: false, min: 15000 }
+                        y: { display: false, min: 0 }
                     },
                     interaction: { mode: 'nearest', axis: 'x', intersect: false }
                 }
@@ -1145,11 +1170,17 @@ function setTimeFilter(mode) {
     // Update hero title
     const titleEl = document.getElementById('hero-title-label');
     if (titleEl) {
-        if (mode === 'live') titleEl.innerText = 'Operação Ao Vivo';
-        else if (mode === 'month') titleEl.innerText = 'Faturamento — Este Mês';
-        else if (mode === 'year') titleEl.innerText = 'Faturamento — Este Ano';
+        const titles = {
+            'live': '🟢 Operação Ao Vivo',
+            'month': 'Faturamento — Este Mês',
+            '2months': 'Faturamento — Últimos 2 Meses',
+            '3months': 'Faturamento — Últimos 3 Meses',
+            'year': 'Faturamento — Este Ano',
+            'lastyear': 'Faturamento — Ano Passado'
+        };
+        titleEl.innerText = titles[mode] || 'Operação Ao Vivo';
     }
     
-    updateKPIs();
+    renderDashboard();
 }
 window.setTimeFilter = setTimeFilter;
