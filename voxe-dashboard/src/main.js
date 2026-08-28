@@ -1,4 +1,4 @@
-﻿let originChart, funnelChart, heroChart;
+let originChart, funnelChart, heroChart;
         let crmData = [];
         
         // --- 3D INTERACTIVITY LOGIC ---
@@ -1128,3 +1128,28 @@ window.addEventListener('resize', () => {
 
 
 
+
+// ===== TIME FILTER SYSTEM =====
+let currentTimeFilter = 'live';
+
+function setTimeFilter(mode) {
+    currentTimeFilter = mode;
+    // Update tab styles
+    document.querySelectorAll('.time-tab').forEach(t => {
+        t.classList.remove('active-tab');
+        t.classList.add('text-slate-500');
+    });
+    event.target.classList.add('active-tab');
+    event.target.classList.remove('text-slate-500');
+    
+    // Update hero title
+    const titleEl = document.getElementById('hero-title-label');
+    if (titleEl) {
+        if (mode === 'live') titleEl.innerText = 'Operação Ao Vivo';
+        else if (mode === 'month') titleEl.innerText = 'Faturamento — Este Mês';
+        else if (mode === 'year') titleEl.innerText = 'Faturamento — Este Ano';
+    }
+    
+    updateKPIs();
+}
+window.setTimeFilter = setTimeFilter;
