@@ -427,7 +427,10 @@
             document.getElementById('kpi-leads').innerText = (countIn + countOut);
             document.getElementById('kpi-ativos').innerText = funnel['cliente'];
             document.getElementById('kpi-mensal').innerText = formatBRL(mrr);
-            document.getElementById('kpi-total').innerText = formatBRL(totalRev);
+                        document.getElementById('kpi-total').innerText = formatBRL(totalRev);
+            
+            const heroTotal = document.getElementById('hero-total-value');
+            if (heroTotal) heroTotal.innerText = formatBRL(totalRev + mrrAtivo);
 
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -1119,6 +1122,7 @@ window.addEventListener('resize', () => {
         }
     }
 });
+
 
 
 
