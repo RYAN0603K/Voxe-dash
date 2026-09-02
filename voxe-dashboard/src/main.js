@@ -204,7 +204,7 @@ let originChart, funnelChart, heroChart;
         function refreshAllViews() {
             renderDashboard();
             renderAgenda();
-            renderKanban();
+            renderKanban(); renderLixeira();
         }
 
                 function allowDrop(ev) {
@@ -245,6 +245,40 @@ let originChart, funnelChart, heroChart;
             { id: 'perdido', label: 'Antigos Clientes', bgHead: 'bg-red-100/50 dark:bg-red-900/30 text-red-700 dark:text-red-400', dot: 'bg-red-400' }
         ];
 
+                function renderLixeira() {
+            const lixeiraList = document.getElementById('lixeira-list');
+            const noLixeira = document.getElementById('no-lixeira');
+            if(!lixeiraList || !noLixeira) return;
+            
+            const trashLeads = crmData.filter(l => l.status === 'lixeira');
+            if(trashLeads.length === 0) {
+                lixeiraList.innerHTML = '';
+                noLixeira.classList.remove('hidden');
+                return;
+            }
+            
+            noLixeira.classList.add('hidden');
+            let html = '';
+            trashLeads.forEach(l => {
+                let originIcon = l.tipo === 'inbound' ? '🎯 Inbound' : '🏹 Outbound';
+                html += 
+                <div class="glass-panel p-5 rounded-2xl border border-red-200 dark:border-red-900/30 relative group flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h4 class="font-black text-lg text-slate-800 dark:text-slate-100">${l.nome}</h4>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mb-2">${originIcon} &bull; ${formatOrigem(l.origem)}</div>
+                        <div class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">${formatBRL(l.mensal)}</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="updateStatusDirectly(${l.id}, 'novo')" class="px-4 py-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-xl font-bold text-sm hover:scale-105 transition-transform">Restaurar</button>
+                        <button onclick="removeLead(${l.id})" class="px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-xl font-bold text-sm hover:scale-105 transition-transform"><i data-lucide="trash-2" class="w-4 h-4 inline"></i> Excluir</button>
+                    </div>
+                </div>
+                ;
+            });
+            lixeiraList.innerHTML = html;
+            lucide.createIcons();
+        }
+
         function renderKanban() {
             const board = document.getElementById(`board-funil`);
             board.innerHTML = '';
@@ -273,7 +307,7 @@ let originChart, funnelChart, heroChart;
                 colLeads.forEach(l => {
                     let selectHtml = `<select onchange="updateStatusDirectly(${l.id}, this.value)" onclick="event.stopPropagation()" class="select-status text-xs w-full mt-4 border-t border-slate-100 dark:border-white/5 pt-3 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">`;
                     COLUMNS.forEach(c => { selectHtml += `<option class="bg-slate-50 dark:bg-dark-900 text-slate-800 dark:text-slate-200" value="${c.id}" ${l.status === c.id ? 'selected' : ''}>Mover p/ ${c.label}</option>`; });
-                    selectHtml += `</select>`;
+                    selectHtml += `<option class="bg-red-50 dark:bg-red-900/30 text-red-500 font-bold" value="lixeira" ${l.status === 'lixeira' ? 'selected' : ''}>🗑️ Mover p/ Lixeira</option>`; selectHtml += `</select>`;
 
                     let tagHtml = l.dataReuniao ? `<div class="text-[11px] bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-lg mt-3 font-semibold inline-flex items-center gap-1.5 border border-slate-200 dark:border-white/5"><i data-lucide="calendar" class="w-3 h-3 text-voxe-500"></i> ${formatDateStr(l.dataReuniao)} às ${l.horaReuniao||'--:--'}</div>` : '';
                     let originIcon = l.tipo === 'inbound' ? '🎯 Inbound' : '🏹 Outbound';
@@ -563,7 +597,7 @@ let originChart, funnelChart, heroChart;
             saveData(); refreshAllViews(); closeModal();
         }
 
-        function deleteFromModal() { const id = document.getElementById('input-id').value; if(id) removeLead(parseInt(id)); }
+        function deleteFromModal() { const id = document.getElementById('input-id').value; if(id) { updateStatusDirectly(parseInt(id), 'lixeira'); closeModal(); } }
 
         // ==========================================
         // ROUTES & BOOT
