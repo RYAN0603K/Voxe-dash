@@ -261,7 +261,7 @@ let originChart, funnelChart, heroChart;
             let html = '';
             trashLeads.forEach(l => {
                 let originIcon = l.tipo === 'inbound' ? '🎯 Inbound' : '🏹 Outbound';
-                html += 
+                html += `
                 <div class="glass-panel p-5 rounded-2xl border border-red-200 dark:border-red-900/30 relative group flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h4 class="font-black text-lg text-slate-800 dark:text-slate-100">${l.nome}</h4>
@@ -273,7 +273,7 @@ let originChart, funnelChart, heroChart;
                         <button onclick="removeLead(${l.id})" class="px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-xl font-bold text-sm hover:scale-105 transition-transform"><i data-lucide="trash-2" class="w-4 h-4 inline"></i> Excluir</button>
                     </div>
                 </div>
-                ;
+                `;
             });
             lixeiraList.innerHTML = html;
             lucide.createIcons();
