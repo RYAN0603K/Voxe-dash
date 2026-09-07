@@ -177,8 +177,8 @@ let originChart, funnelChart, heroChart;
                 tipo: l.tipo || null,
                 origem: l.origem || null,
                 status: l.status || 'novo',
-                dataReuniao: l.dataReuniao || l.data || null,
-                horaReuniao: l.horaReuniao || l.hora || null,
+                datareuniao: l.dataReuniao || l.data || l.datareuniao || null,
+                horareuniao: l.horaReuniao || l.hora || l.horareuniao || null,
                 mensal: l.mensal || 0,
                 total: l.total || 0,
                 anotacoes: l.anotacoes || null
@@ -199,7 +199,11 @@ let originChart, funnelChart, heroChart;
                 }
                 
                 if (sData && sData.length > 0) {
-                    crmData = sData;
+                    crmData = sData.map(l => ({
+                        ...l,
+                        dataReuniao: l.datareuniao || l.dataReuniao,
+                        horaReuniao: l.horareuniao || l.horaReuniao
+                    }));
                     refreshAllViews();
                     return;
                 } else {
