@@ -178,6 +178,18 @@ let originChart, funnelChart, heroChart;
                         crmData = data;
                         refreshAllViews();
                         return;
+                    } else {
+                        // Supabase is empty! Let's check if we have local data to push up
+                        const saved = localStorage.getItem('voxe_crm_data_v4');
+                        if (saved) {
+                            crmData = JSON.parse(saved);
+                            if (crmData.length > 0) {
+                                // Push local data UP to Supabase seamlessly
+                                await supabaseClient.from('leads').upsert(crmData);
+                            }
+                        }
+                        refreshAllViews();
+                        return;
                     }
                 } catch(err) {
                     console.error("Supabase Error:", err);
