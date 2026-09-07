@@ -724,6 +724,9 @@ let originChart, funnelChart, heroChart;
             if(pageId === 'cerebro') {
                 setTimeout(initBrain, 50);
             }
+            if(pageId === 'lixeira') {
+                setTimeout(renderLixeira, 50);
+            }
             if(false) {
                 setTimeout(renderKanban, 50); // Give DOM time to display:block so Highcharts can calculate dimensions
             }
