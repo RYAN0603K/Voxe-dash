@@ -143,14 +143,21 @@ let originChart, funnelChart, heroChart;
         let supabaseClient = null;
 
         function initSupabase() {
-            const url = 'https://feqxzustzkzrpkgqyptz.supabase.co';
-            // Tabela criada via conexão direta. Usando chave anônima (segura)
-            const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcXh6dXN0emt6cnBrZ3F5cHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODgzMTIsImV4cCI6MjEwMzM2NDMxMn0.Y9scaSab-52Y13QfQhGUw4JEa9tYvlbtMxoA9wq8pQE';
+            let url = localStorage.getItem('voxe_supa_url');
+            let key = localStorage.getItem('voxe_supa_key');
             
-            supabaseClient = supabase.createClient(url, key);
-            const modal = document.getElementById('supabase-modal');
-            if(modal) modal.classList.add('hidden');
-            loadData(); // Reload from supabase
+            if (!url || !key) {
+                // Fallback para banco hardcoded antigo
+                url = 'https://feqxzustzkzrpkgqyptz.supabase.co';
+                key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcXh6dXN0emt6cnBrZ3F5cHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODgzMTIsImV4cCI6MjEwMzM2NDMxMn0.Y9scaSab-52Y13QfQhGUw4JEa9tYvlbtMxoA9wq8pQE';
+            }
+            
+            if (url && key) {
+                supabaseClient = supabase.createClient(url, key);
+                const modal = document.getElementById('supabase-modal');
+                if(modal) modal.classList.add('hidden');
+                loadData(); // Reload from supabase
+            }
         }
 
         function connectSupabase() {
