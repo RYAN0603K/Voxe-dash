@@ -553,6 +553,7 @@ let originChart, funnelChart, heroChart;
 
             const now = new Date();
             let filteredData = crmData.filter(l => {
+                if (l.status === 'lixeira') return false; // Ignora lixeira nos gráficos do dashboard
                 if (currentTimeFilter === 'live') return true;
                 
                 let leadDate;
@@ -566,17 +567,11 @@ let originChart, funnelChart, heroChart;
 
                 if (isNaN(leadDate.getTime())) return true; // if date is invalid, include it
 
-                const isSameMonth = leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
-                const isSameYear = leadDate.getFullYear() === now.getFullYear();
-                const isLastYear = leadDate.getFullYear() === now.getFullYear() - 1;
-                const diffTime = Math.abs(now - leadDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (currentTimeFilter === 'month') return isSameMonth;
-                if (currentTimeFilter === '2months') return diffDays <= 60;
-                if (currentTimeFilter === '3months') return diffDays <= 90;
-                if (currentTimeFilter === 'year') return isSameYear;
-                if (currentTimeFilter === 'lastyear') return isLastYear;
+                if (currentTimeFilter === 'month') return leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
+                if (currentTimeFilter === '2months') return leadDate >= new Date(now.getFullYear(), now.getMonth()-2, 1);
+                if (currentTimeFilter === '3months') return leadDate >= new Date(now.getFullYear(), now.getMonth()-3, 1);
+                if (currentTimeFilter === 'year') return leadDate.getFullYear() === now.getFullYear();
+                if (currentTimeFilter === 'lastyear') return leadDate.getFullYear() === now.getFullYear()-1;
                 
                 return true;
             });
