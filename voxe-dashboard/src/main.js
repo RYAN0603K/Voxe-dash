@@ -169,6 +169,22 @@ let originChart, funnelChart, heroChart;
             initSupabase();
         }
 
+        function getCleanPayload(l) {
+            return {
+                id: String(l.id),
+                nome: l.nome || '',
+                telefone: l.telefone || null,
+                tipo: l.tipo || null,
+                origem: l.origem || null,
+                status: l.status || 'novo',
+                dataReuniao: l.dataReuniao || l.data || null,
+                horaReuniao: l.horaReuniao || l.hora || null,
+                mensal: l.mensal || 0,
+                total: l.total || 0,
+                anotacoes: l.anotacoes || null
+            };
+        }
+
         async function loadData() {
             if (supabaseClient) {
                 let sData = null;
@@ -179,7 +195,7 @@ let originChart, funnelChart, heroChart;
                 } catch(err) {
                     console.error("Supabase Error:", err);
                     alert("Erro ao ler do Supabase. O banco de dados pode estar indisponível.");
-                    return; // Stop if we can't read
+                    return; 
                 }
                 
                 if (sData && sData.length > 0) {
@@ -187,22 +203,13 @@ let originChart, funnelChart, heroChart;
                     refreshAllViews();
                     return;
                 } else {
-                    // Supabase is empty! Let's check if we have local data to push up
                     const saved = localStorage.getItem('voxe_crm_data_v4');
                     if (saved) {
                         crmData = JSON.parse(saved);
                         if (crmData.length > 0) {
-                            // Migrate old keys to prevent Supabase rejection
-                            crmData = crmData.map(l => {
-                                let nl = {...l};
-                                if(nl.data) { nl.dataReuniao = nl.data; delete nl.data; }
-                                if(nl.hora) { nl.horaReuniao = nl.hora; delete nl.hora; }
-                                // Remove any other possible old keys that break SQL
-                                delete nl.originIcon; 
-                                return nl;
-                            });
                             try {
-                                await supabaseClient.from('leads').upsert(crmData);
+                                const cleanData = crmData.map(getCleanPayload);
+                                await supabaseClient.from('leads').upsert(cleanData);
                             } catch(e) { console.error("Sync error:", e); }
                         }
                     }
@@ -211,24 +218,17 @@ let originChart, funnelChart, heroChart;
                 }
             }
             
-            // Fallback to local storage
             const saved = localStorage.getItem('voxe_crm_data_v4');
-            if (saved) {
-                crmData = JSON.parse(saved);
-            } else {
-                crmData = [];
-                saveData();
-            }
+            if (saved) crmData = JSON.parse(saved);
             refreshAllViews();
         }
-
+        
         async function saveData() { 
             localStorage.setItem('voxe_crm_data_v4', JSON.stringify(crmData)); 
-            
             if (supabaseClient) {
                 try {
-                    // Sync all to supabase (Upsert requires ID)
-                    const { error } = await supabaseClient.from('leads').upsert(crmData);
+                    const cleanData = crmData.map(getCleanPayload);
+                    const { error } = await supabaseClient.from('leads').upsert(cleanData);
                     if (error) console.error("Erro ao salvar no Supabase:", error);
                 } catch(err) {}
             }
