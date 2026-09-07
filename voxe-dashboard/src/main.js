@@ -347,6 +347,11 @@ let originChart, funnelChart, heroChart;
                 }
                 saveData(); 
                 refreshAllViews(); 
+
+                if (newStatus === 'cliente') {
+                    // Se moveu para cliente pelo kanban/dropdown, abre o modal automaticamente para preencher o contrato
+                    editLead(id);
+                }
             }
         }
 
