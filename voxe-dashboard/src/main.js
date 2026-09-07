@@ -171,29 +171,43 @@ let originChart, funnelChart, heroChart;
 
         async function loadData() {
             if (supabaseClient) {
+                let sData = null;
                 try {
                     const { data, error } = await supabaseClient.from('leads').select('*');
                     if (error) throw error;
-                    if (data && data.length > 0) {
-                        crmData = data;
-                        refreshAllViews();
-                        return;
-                    } else {
-                        // Supabase is empty! Let's check if we have local data to push up
-                        const saved = localStorage.getItem('voxe_crm_data_v4');
-                        if (saved) {
-                            crmData = JSON.parse(saved);
-                            if (crmData.length > 0) {
-                                // Push local data UP to Supabase seamlessly
-                                await supabaseClient.from('leads').upsert(crmData);
-                            }
-                        }
-                        refreshAllViews();
-                        return;
-                    }
+                    sData = data;
                 } catch(err) {
                     console.error("Supabase Error:", err);
-                    alert("Erro ao ler do Supabase. Verifique se a tabela 'leads' existe e é pública.");
+                    alert("Erro ao ler do Supabase. O banco de dados pode estar indisponível.");
+                    return; // Stop if we can't read
+                }
+                
+                if (sData && sData.length > 0) {
+                    crmData = sData;
+                    refreshAllViews();
+                    return;
+                } else {
+                    // Supabase is empty! Let's check if we have local data to push up
+                    const saved = localStorage.getItem('voxe_crm_data_v4');
+                    if (saved) {
+                        crmData = JSON.parse(saved);
+                        if (crmData.length > 0) {
+                            // Migrate old keys to prevent Supabase rejection
+                            crmData = crmData.map(l => {
+                                let nl = {...l};
+                                if(nl.data) { nl.dataReuniao = nl.data; delete nl.data; }
+                                if(nl.hora) { nl.horaReuniao = nl.hora; delete nl.hora; }
+                                // Remove any other possible old keys that break SQL
+                                delete nl.originIcon; 
+                                return nl;
+                            });
+                            try {
+                                await supabaseClient.from('leads').upsert(crmData);
+                            } catch(e) { console.error("Sync error:", e); }
+                        }
+                    }
+                    refreshAllViews();
+                    return;
                 }
             }
             
