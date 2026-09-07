@@ -169,6 +169,17 @@ let originChart, funnelChart, heroChart;
             initSupabase();
         }
 
+        async function handleRefreshClick() {
+            const btn = document.getElementById('btn-refresh');
+            if (btn) btn.classList.add('animate-spin');
+            await loadData();
+            if (btn) {
+                btn.classList.remove('animate-spin');
+                btn.classList.add('text-voxe-500');
+                setTimeout(() => btn.classList.remove('text-voxe-500'), 1000);
+            }
+        }
+
         function getCleanPayload(l) {
             return {
                 id: String(l.id),
@@ -185,6 +196,28 @@ let originChart, funnelChart, heroChart;
             };
         }
 
+        function processAutoDelete(dataArray) {
+            const now = Date.now();
+            const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+            let needsSave = false;
+            
+            const filtered = dataArray.filter(l => {
+                if (l.status === 'lixeira' && l.anotacoes && l.anotacoes.includes('[LIXEIRA:')) {
+                    const match = l.anotacoes.match(/\[LIXEIRA:(\d+)\]/);
+                    if (match) {
+                        const dateLixeira = parseInt(match[1]);
+                        if (now - dateLixeira > THIRTY_DAYS) {
+                            needsSave = true;
+                            if (supabaseClient) supabaseClient.from('leads').delete().eq('id', String(l.id)).then();
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
+            return { filtered, needsSave };
+        }
+
         async function loadData() {
             if (supabaseClient) {
                 let sData = null;
@@ -199,11 +232,16 @@ let originChart, funnelChart, heroChart;
                 }
                 
                 if (sData && sData.length > 0) {
-                    crmData = sData.map(l => ({
+                    let mapped = sData.map(l => ({
                         ...l,
                         dataReuniao: l.datareuniao || l.dataReuniao,
                         horaReuniao: l.horareuniao || l.horaReuniao
                     }));
+                    
+                    const { filtered, needsSave } = processAutoDelete(mapped);
+                    crmData = filtered;
+                    if (needsSave) saveData();
+                    
                     refreshAllViews();
                     return;
                 } else {
@@ -223,7 +261,12 @@ let originChart, funnelChart, heroChart;
             }
             
             const saved = localStorage.getItem('voxe_crm_data_v4');
-            if (saved) crmData = JSON.parse(saved);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const { filtered, needsSave } = processAutoDelete(parsed);
+                crmData = filtered;
+                if (needsSave) saveData();
+            }
             refreshAllViews();
         }
         
@@ -261,7 +304,16 @@ let originChart, funnelChart, heroChart;
         }
         function updateStatusDirectly(id, newStatus) {
             const lead = crmData.find(l => l.id == id);
-            if(lead) { lead.status = newStatus; saveData(); refreshAllViews(); }
+            if(lead) { 
+                lead.status = newStatus; 
+                if (newStatus === 'lixeira') {
+                    lead.anotacoes = (lead.anotacoes || '') + '\n[LIXEIRA:' + Date.now() + ']';
+                } else if (lead.anotacoes) {
+                    lead.anotacoes = lead.anotacoes.replace(/\n?\[LIXEIRA:\d+\]/g, '');
+                }
+                saveData(); 
+                refreshAllViews(); 
+            }
         }
 
         function removeLead(id) {
@@ -297,20 +349,32 @@ let originChart, funnelChart, heroChart;
             noLixeira.classList.add('hidden');
             let html = '';
             trashLeads.forEach(l => {
-                let originIcon = l.tipo === 'inbound' ? '🎯 Inbound' : '🏹 Outbound';
+                let originIcon = l.tipo === 'inbound' ? '⚡ Inbound' : '🎯 Outbound';
+                
+                let daysLeft = 30;
+                let cleanAnotacoes = l.anotacoes || '';
+                if (cleanAnotacoes.includes('[LIXEIRA:')) {
+                    const match = cleanAnotacoes.match(/\[LIXEIRA:(\d+)\]/);
+                    if (match) {
+                        const dateLixeira = parseInt(match[1]);
+                        const elapsed = Date.now() - dateLixeira;
+                        daysLeft = Math.max(0, 30 - Math.floor(elapsed / (24 * 60 * 60 * 1000)));
+                    }
+                    cleanAnotacoes = cleanAnotacoes.replace(/\n?\[LIXEIRA:\d+\]/g, '').trim();
+                }
+
                 html += `
                 <div class="glass-panel p-5 rounded-2xl border border-red-200 dark:border-red-900/30 relative group flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h4 class="font-black text-lg text-slate-800 dark:text-slate-100">${l.nome}</h4>
+                        <h4 class="font-black text-lg text-slate-800 dark:text-slate-100">${l.nome} <span class="ml-2 text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded-md">Apaga em ${daysLeft} dia${daysLeft!==1?'s':''}</span></h4>
                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mb-2">${originIcon} &bull; ${formatOrigem(l.origem)}</div>
-                        <div class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">${formatBRL(l.mensal)}</div>
+                        <p class="text-sm text-slate-500 line-clamp-1">${cleanAnotacoes || 'Sem anotações'}</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <button onclick="updateStatusDirectly(${l.id}, 'novo')" class="px-4 py-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-xl font-bold text-sm hover:scale-105 transition-transform">Restaurar</button>
-                        <button onclick="removeLead(${l.id})" class="px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-xl font-bold text-sm hover:scale-105 transition-transform"><i data-lucide="trash-2" class="w-4 h-4 inline"></i> Excluir</button>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="updateStatusDirectly(${l.id}, 'novo')" class="px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-sm transition-colors flex items-center gap-2"><i data-lucide="rotate-ccw" class="w-4 h-4"></i> Restaurar</button>
+                        <button onclick="removeLead(${l.id})" class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold rounded-xl text-sm transition-colors flex items-center gap-2"><i data-lucide="trash" class="w-4 h-4"></i> Excluir</button>
                     </div>
-                </div>
-                `;
+                </div>`;
             });
             lixeiraList.innerHTML = html;
             lucide.createIcons();
