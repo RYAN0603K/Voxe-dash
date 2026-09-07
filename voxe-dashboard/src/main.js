@@ -169,6 +169,34 @@ let originChart, funnelChart, heroChart;
             initSupabase();
         }
 
+        function toggleContratoSection() {
+            const status = document.getElementById('input-status').value;
+            const secao = document.getElementById('secao-contrato');
+            if (status === 'cliente') {
+                secao.classList.remove('hidden');
+                // Auto-preencher data de início com hoje se estiver vazio
+                const inicio = document.getElementById('input-contrato-inicio');
+                if (!inicio.value) inicio.value = new Date().toISOString().split('T')[0];
+                // Auto-preencher mensal do contrato com o valor MRR se já tiver
+                const mrr = document.getElementById('input-mensal').value;
+                const contratoMensal = document.getElementById('input-contrato-mensal');
+                if (!contratoMensal.value && mrr) contratoMensal.value = mrr;
+                calcularTotalContrato();
+            } else {
+                secao.classList.add('hidden');
+            }
+        }
+
+        function calcularTotalContrato() {
+            const meses = parseInt(document.getElementById('input-contrato-meses').value) || 0;
+            const mensal = parseFloat(document.getElementById('input-contrato-mensal').value) || 0;
+            const total = meses * mensal;
+            document.getElementById('contrato-total-display').innerText = formatBRL(total);
+            // Auto-preencher os campos de MRR e LTV
+            document.getElementById('input-mensal').value = mensal;
+            document.getElementById('input-total').value = total;
+        }
+
         async function handleRefreshClick() {
             const btn = document.getElementById('btn-refresh');
             if (btn) btn.classList.add('animate-spin');
@@ -658,6 +686,7 @@ let originChart, funnelChart, heroChart;
             document.getElementById('btn-delete').classList.add('hidden');
             document.getElementById('input-tipo').value = 'inbound';
             updateOrigemOptions();
+            toggleContratoSection();
             document.getElementById('modal-new-lead').classList.remove('hidden'); 
         }
         function closeModal() { document.getElementById('modal-new-lead').classList.add('hidden'); }
@@ -677,27 +706,53 @@ let originChart, funnelChart, heroChart;
             document.getElementById('input-hora').value = l.horaReuniao || '';
             document.getElementById('input-mensal').value = l.mensal || '';
             document.getElementById('input-total').value = l.total || '';
-            document.getElementById('input-anotacoes').value = l.anotacoes || '';
+            document.getElementById('input-anotacoes').value = (l.anotacoes || '').replace(/\n?\[CONTRATO:.*?\]/g, '').replace(/\n?\[RECICLADO\]/g, '').replace(/\n?\[LIXEIRA:\d+\]/g, '').trim();
+            
+            // Carregar dados do contrato
+            document.getElementById('input-contrato-meses').value = l.contratoMeses || '6';
+            document.getElementById('input-contrato-inicio').value = l.contratoInicio || '';
+            document.getElementById('input-contrato-mensal').value = l.mensal || '';
+            
             document.getElementById('btn-delete').classList.remove('hidden');
+            toggleContratoSection();
             document.getElementById('modal-new-lead').classList.remove('hidden');
         }
 
         function saveLead(e) { if(e) e.preventDefault();
+            const status = document.getElementById('input-status').value;
             const payload = {
                 id: document.getElementById('input-id').value ? parseInt(document.getElementById('input-id').value) : Date.now(),
                 nome: document.getElementById('input-nome').value,
                 telefone: document.getElementById('input-telefone').value,
                 tipo: document.getElementById('input-tipo').value,
                 origem: document.getElementById('input-origem').value,
-                status: document.getElementById('input-status').value,
+                status: status,
                 dataReuniao: document.getElementById('input-data').value,
                 horaReuniao: document.getElementById('input-hora').value,
                 mensal: parseFloat(document.getElementById('input-mensal').value) || 0,
                 total: parseFloat(document.getElementById('input-total').value) || 0,
                 anotacoes: document.getElementById('input-anotacoes').value
             };
+            
+            // Salvar dados do contrato se for cliente
+            if (status === 'cliente') {
+                payload.contratoMeses = parseInt(document.getElementById('input-contrato-meses').value) || 6;
+                payload.contratoInicio = document.getElementById('input-contrato-inicio').value;
+                payload.mensal = parseFloat(document.getElementById('input-contrato-mensal').value) || payload.mensal;
+                payload.total = payload.mensal * payload.contratoMeses;
+            }
+            
+            // Preservar tags internas do lead antigo
+            const existing = crmData.find(x => x.id === payload.id);
+            if (existing && existing.anotacoes) {
+                const reciclado = existing.anotacoes.includes('[RECICLADO]') ? '\n[RECICLADO]' : '';
+                const lixeiraMatch = existing.anotacoes.match(/\n?\[LIXEIRA:\d+\]/);
+                const lixeira = lixeiraMatch ? lixeiraMatch[0] : '';
+                payload.anotacoes = payload.anotacoes + reciclado + lixeira;
+            }
+            
             const i = crmData.findIndex(x => x.id === payload.id);
-            if(i >= 0) crmData[i] = payload; else crmData.push(payload);
+            if(i >= 0) crmData[i] = {...crmData[i], ...payload}; else crmData.push(payload);
             saveData(); refreshAllViews(); closeModal();
         }
 
@@ -798,7 +853,9 @@ let originChart, funnelChart, heroChart;
 
 // Expose functions to window for inline HTML event handlers
 window.changePage = changePage;
-  window.updateOrigemOptions = updateOrigemOptions;
+window.updateOrigemOptions = updateOrigemOptions;
+window.toggleContratoSection = toggleContratoSection;
+window.calcularTotalContrato = calcularTotalContrato;
   function exportBackup() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(crmData));
     const downloadAnchorNode = document.createElement('a');
