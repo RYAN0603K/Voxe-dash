@@ -198,7 +198,7 @@ let originChart, funnelChart, heroChart;
 
         function processAutoDelete(dataArray) {
             const now = Date.now();
-            const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+            const SIXTY_DAYS = 60 * 24 * 60 * 60 * 1000;
             let needsSave = false;
             
             const filtered = dataArray.filter(l => {
@@ -206,7 +206,7 @@ let originChart, funnelChart, heroChart;
                     const match = l.anotacoes.match(/\[LIXEIRA:(\d+)\]/);
                     if (match) {
                         const dateLixeira = parseInt(match[1]);
-                        if (now - dateLixeira > THIRTY_DAYS) {
+                        if (now - dateLixeira > SIXTY_DAYS) {
                             needsSave = true;
                             if (supabaseClient) supabaseClient.from('leads').delete().eq('id', String(l.id)).then();
                             return false;
@@ -305,11 +305,17 @@ let originChart, funnelChart, heroChart;
         function updateStatusDirectly(id, newStatus) {
             const lead = crmData.find(l => l.id == id);
             if(lead) { 
+                const wasLixeira = lead.status === 'lixeira';
                 lead.status = newStatus; 
                 if (newStatus === 'lixeira') {
-                    lead.anotacoes = (lead.anotacoes || '') + '\n[LIXEIRA:' + Date.now() + ']';
-                } else if (lead.anotacoes) {
-                    lead.anotacoes = lead.anotacoes.replace(/\n?\[LIXEIRA:\d+\]/g, '');
+                    lead.anotacoes = (lead.anotacoes || '').replace(/\n?\[LIXEIRA:\d+\]/g, '').replace(/\n?\[RECICLADO\]/g, '');
+                    lead.anotacoes = lead.anotacoes + '\n[LIXEIRA:' + Date.now() + ']';
+                } else if (wasLixeira) {
+                    // Restaurando da lixeira: limpar tag LIXEIRA e marcar como RECICLADO
+                    lead.anotacoes = (lead.anotacoes || '').replace(/\n?\[LIXEIRA:\d+\]/g, '');
+                    if (!lead.anotacoes.includes('[RECICLADO]')) {
+                        lead.anotacoes = lead.anotacoes + '\n[RECICLADO]';
+                    }
                 }
                 saveData(); 
                 refreshAllViews(); 
@@ -351,16 +357,16 @@ let originChart, funnelChart, heroChart;
             trashLeads.forEach(l => {
                 let originIcon = l.tipo === 'inbound' ? '⚡ Inbound' : '🎯 Outbound';
                 
-                let daysLeft = 30;
+                let daysLeft = 60;
                 let cleanAnotacoes = l.anotacoes || '';
                 if (cleanAnotacoes.includes('[LIXEIRA:')) {
                     const match = cleanAnotacoes.match(/\[LIXEIRA:(\d+)\]/);
                     if (match) {
                         const dateLixeira = parseInt(match[1]);
                         const elapsed = Date.now() - dateLixeira;
-                        daysLeft = Math.max(0, 30 - Math.floor(elapsed / (24 * 60 * 60 * 1000)));
+                        daysLeft = Math.max(0, 60 - Math.floor(elapsed / (24 * 60 * 60 * 1000)));
                     }
-                    cleanAnotacoes = cleanAnotacoes.replace(/\n?\[LIXEIRA:\d+\]/g, '').trim();
+                    cleanAnotacoes = cleanAnotacoes.replace(/\n?\[LIXEIRA:\d+\]/g, '').replace(/\n?\[RECICLADO\]/g, '').trim();
                 }
 
                 html += `
@@ -419,9 +425,11 @@ let originChart, funnelChart, heroChart;
                         whatsAppHtml = `<a href="https://wa.me/55${zap}" target="_blank" onclick="event.stopPropagation()" class="mt-3 text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 text-xs font-bold transition-colors w-fit"><i data-lucide="message-circle" class="w-3.5 h-3.5"></i> ${formatPhone(l.telefone)}</a>`;
                     }
 
+                    let recycledBadge = (l.anotacoes && l.anotacoes.includes('[RECICLADO]')) ? ' <span class="inline-flex items-center gap-1 ml-1 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md">♻️</span>' : '';
+
                     html += `
                         <div draggable="true" ondragstart="dragCard(event, ${l.id})" class="kanban-card bg-white dark:bg-dark-850 border border-slate-200 dark:border-white/5 cursor-pointer" onclick="editLead(${l.id})">
-                            <div class="font-extrabold text-sm mb-1.5 line-clamp-1 text-slate-800 dark:text-slate-100" title="${l.nome}">${l.nome}</div>
+                            <div class="font-extrabold text-sm mb-1.5 line-clamp-1 text-slate-800 dark:text-slate-100" title="${l.nome}">${l.nome}${recycledBadge}</div>
                             <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 line-clamp-1">${originIcon} • ${getOrigemLabel(l.origem)}</div>
                             <div class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">${formatBRL(l.mensal)}</div>
                             ${whatsAppHtml}
